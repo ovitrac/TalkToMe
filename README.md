@@ -5,8 +5,8 @@ and mood.
 
 > *"Hi Olivier, I need your help on…"* · *"The results of [THIS SESSION] landed."*
 
-**Status:** v0.1 in development — speech, command line, Claude Code hooks and plugin. Design:
-`base/DESIGN_TALKTOME_20261006.md`; decisions: `base/DECISIONS.md`.
+**Status:** v0.1.0 — speech, command line, Claude Code hooks, plugin and `/talktome` skill. Design:
+`base/DESIGN_TALKTOME_20261006.md`; decisions: `base/DECISIONS.md`; changes: `CHANGELOG.md`.
 
 ## Intent
 
@@ -21,10 +21,14 @@ help, needs your attention, or has finished a long piece of work, and tells you 
 
 ## Install
 
+TalkToMe has two parts: the speaking engine (a Python package) and the Claude Code plugin (hooks and the
+`/talktome` skill). The plugin is published in the **adservio** marketplace, where it can be installed alone or
+with the other Adservio tools.
+
 1. The speaking engine (Python ≥ 3.11, Linux or macOS):
 
    ```bash
-   pipx install git+https://github.com/ovitrac/TalkToMe
+   pipx install git+https://github.com/ovitrac/TalkToMe@v0.1.0
    talktome setup --name "Your name" --fetch   # Kokoro model files, 338 MB, SHA-256 checked
    talktome doctor
    ```
@@ -32,12 +36,15 @@ help, needs your attention, or has finished a long piece of work, and tells you 
    Already have `kokoro-v1.0.onnx` and `voices-v1.0.bin`? Use `talktome setup --models-dir DIR` instead of
    `--fetch`.
 
-2. The Claude Code plugin (hooks and the `/talktome` skill), from inside Claude Code:
+2. The Claude Code plugin, from inside Claude Code:
 
    ```text
-   /plugin marketplace add ovitrac/TalkToMe
-   /plugin install talktome@talktome
+   /plugin marketplace add ovitrac/AdservioToolbox
+   /plugin install talktome@adservio
    ```
+
+   `adservio-toolbox@adservio` installs TalkToMe together with the other Adservio tools instead
+   (see [AdservioToolbox](https://github.com/ovitrac/AdservioToolbox)).
 
 ## What you hear
 
