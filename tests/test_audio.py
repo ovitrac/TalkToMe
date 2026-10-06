@@ -9,7 +9,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from talktome import earcon, engine
+from talktome import earcon, engine, langs
 from talktome.moods import MOODS
 
 
@@ -44,11 +44,12 @@ def test_synth_speed_is_clamped() -> None:
     assert engine.synth_speed(0.5, 4.0) == 0.5 and engine.synth_speed(2.0, -4.0) == 2.0
 
 
-def test_lang_for() -> None:
-    assert engine.lang_for("bm_george") == "en-gb"
-    assert engine.lang_for("af_heart") == "en-us"
-    assert engine.lang_for("ff_siwis") == "fr-fr"
-    assert engine.lang_for("bm_george:0.7+bm_fable:0.3") == "en-gb"
+def test_kokoro_lang() -> None:
+    assert langs.kokoro_lang("en", "bm_george") == "en-gb"
+    assert langs.kokoro_lang("en", "af_heart") == "en-us"
+    assert langs.kokoro_lang("fr", "ff_siwis") == "fr-fr"
+    assert langs.kokoro_lang("pt", "pf_dora") == "pt-br"
+    assert langs.kokoro_lang("zh", "zf_xiaoxiao") == "cmn"
 
 
 @pytest.mark.parametrize("mood", sorted(MOODS))

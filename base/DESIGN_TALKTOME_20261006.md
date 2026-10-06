@@ -255,11 +255,29 @@ the lock; `log.jsonl`) and audio in `~/.cache/talktome/`.
 
 ### 7.1 Jokes, facts and why (D-0017)
 
-Canned deliberate messages, printed then spoken, in the configured language (`fun.toml`). Jokes and facts are
+Canned deliberate messages, printed then spoken, in the configured language (language pack, §7.2). Jokes and facts are
 dealt from a shuffled deck kept in the state directory: none repeats before all have been told. Written to be
 heard (no digits or symbols to read aloud); facts are well-established ones only. `why` answers like MATLAB's
 `why`: a special case one time in five, else a grammatical sentence from word lists (own lists; French agreement
 and elision); `why N` is reproducible.
+
+### 7.2 Language packs (D-0019)
+
+One TOML file per language under `src/talktome/lang/` (schema `talktome-lang/1`): status (`stable` /
+`experimental`), engine and phonemizer code, voices (default per gender and per-session pools), words (fallback and
+discreet session names, possessive), grammar (articles, skipped words and plurals for the gender guess, elision
+before a vowel, contractions), templates (`useful`, `fun`), jokes, facts, and `why` (special answers, names, nouns
+with gender, agreeing adjectives, verbs, goals, noun-phrase and sentence patterns). Installed packs are listed in
+the configuration (`languages`); a pack is parsed only when its language is used.
+
+| Code | Status | Kokoro phonemizer | Evidence (2026-10-06) |
+|---|---|---|---|
+| en, fr | stable, default | en-us / en-gb by voice, fr-fr | unchanged |
+| es, pt, it | stable, default | es, pt-br, it | renders, plausible phonemes |
+| hi, zh | experimental, default | hi, cmn | plausible phonemes; not reviewed by native speakers |
+| ja | excluded | — | kanji and katakana read as "Japanese letter" / "Chinese letter"; needs an extra phonemizer |
+
+German and other languages come as Piper packs, downloaded on `talktome lang add` (D-0020, next release).
 
 ## 8. Plugin and skill
 
@@ -294,8 +312,10 @@ TalkToMe/
 │   ├── cli.py        # argument parsing; light imports only
 │   ├── hook.py       # fast path: stdin → state → decide → detach
 │   ├── decide.py     # pure: event + state + config + clock → Utterance | None
-│   ├── catalog.py    # loads catalog.toml, renders templates, empty-name rule
-│   ├── catalog.toml  # §4, both registers, EN / FR
+│   ├── catalog.py    # templates from the language packs, rendering, empty-name rule
+│   ├── langs.py      # language packs (§7.2)
+│   ├── lang/*.toml   # one pack per language: templates, jokes, facts, why, voices, grammar
+│   ├── fun.py        # joke, fact, why (§7.1)
 │   ├── moods.py      # §5 presets
 │   ├── config.py     # schema, defaults, validation, set/show
 │   ├── state.py      # per-session state files

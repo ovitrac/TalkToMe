@@ -1,5 +1,7 @@
 """Message catalogue (design §4): templates per register, language and class; rendering. Stdlib only.
 
+The templates live in the language packs (`langs`); the user may override any list in the configuration.
+
 Author: Olivier Vitrac, PhD, HDR — Adservio Innovation Lab — Adservio Group — olivier.vitrac@adservio.fr
 License: MIT
 """
@@ -8,30 +10,23 @@ from __future__ import annotations
 
 import re
 import string
-import tomllib
-from functools import lru_cache
-from importlib.resources import files
 from typing import Any
 
-SCHEMA = "talktome-catalog/1"
-PLACEHOLDERS = frozenset({"name", "session", "his"})
+from . import langs
 
-# Removal of an empty {name} together with its comma, tried in order (one {name} per template at most).
+PLACEHOLDERS = frozenset({"name", "session", "his"})
+CLASSES = ("help", "attention", "input", "landed")
+REGISTERS = ("useful", "fun")
+
+# Removal of an empty {name} together with its comma, tried in order (one {name} per template at most);
+# ASCII and full-width commas, Latin, Devanagari (।) and CJK (。！？：) punctuation.
 _DROP_NAME: tuple[tuple[re.Pattern[str], bool], ...] = (
-    (re.compile(r"^\{name\}\s*,\s*"), True),  # "{name}, X" → "X" (capitalize)
-    (re.compile(r"\s*,\s*\{name\}(?=\s*,)"), False),  # "ready, {name}, X" → "ready, X"
-    (re.compile(r"\s*,\s*\{name\}(?=\s*[.!?:;…])"), False),  # "Psst, {name}." → "Psst."
-    (re.compile(r"\s*,\s*\{name\}\s*$"), False),
+    (re.compile(r"^\{name\}\s*[,，]\s*"), True),  # "{name}, X" → "X" (capitalize)
+    (re.compile(r"\s*[,，]\s*\{name\}(?=\s*[,，])"), False),  # "ready, {name}, X" → "ready, X"
+    (re.compile(r"\s*[,，]\s*\{name\}(?=\s*[.!?:;…।。！？：])"), False),  # "Psst, {name}." → "Psst."
+    (re.compile(r"\s*[,，]\s*\{name\}\s*$"), False),
     (re.compile(r"\s*\{name\}"), False),
 )
-
-
-@lru_cache(maxsize=1)
-def builtin() -> dict[str, Any]:
-    data = tomllib.loads(files("talktome").joinpath("catalog.toml").read_text(encoding="utf-8"))
-    if data.get("schema") != SCHEMA:
-        raise ValueError(f"catalog schema must be {SCHEMA!r}")
-    return data
 
 
 def fields(template: str) -> list[str]:
@@ -53,8 +48,6 @@ def check_template(template: str) -> list[str]:
 
 
 def validate_overrides(templates: Any) -> list[str]:
-    from .config import CLASSES, LANGUAGES, REGISTERS
-
     if not isinstance(templates, dict):
         return ["templates must be an object"]
     errors: list[str] = []
@@ -63,8 +56,8 @@ def validate_overrides(templates: Any) -> list[str]:
             errors.append(f"templates.{reg}: register must be one of {REGISTERS}")
             continue
         for lang, by_cls in by_lang.items():
-            if lang not in LANGUAGES or not isinstance(by_cls, dict):
-                errors.append(f"templates.{reg}.{lang}: language must be one of {LANGUAGES}")
+            if lang not in langs.codes() or not isinstance(by_cls, dict):
+                errors.append(f"templates.{reg}.{lang}: language must be one of {langs.codes()}")
                 continue
             for cls, entry in by_cls.items():
                 where = f"templates.{reg}.{lang}.{cls}"
@@ -78,27 +71,21 @@ def validate_overrides(templates: Any) -> list[str]:
     return errors
 
 
+def builtin(lang: str, register: str, cls: str) -> list[str]:
+    return list(langs.pack(lang)["templates"][register][cls])
+
+
 def templates(cfg: dict[str, Any], register: str, lang: str, cls: str) -> list[str]:
-    """The user's override if any, else the built-in list."""
+    """The user's override if any, else the language pack's list."""
     entry = cfg.get("templates", {}).get(register, {}).get(lang, {}).get(cls)
     if entry is not None:
         return [entry] if isinstance(entry, str) else list(entry)
-    return list(builtin()[register][lang][cls])
-
-
-_ELIDE = re.compile(r"\b(le|la|de|que) (?=[aeiouàâäéèêëîïôöùûüAEIOUÀÂÄÉÈÊËÎÏÔÖÙÛÜ])", re.IGNORECASE)
-_ELIDED = {"le": "l'", "la": "l'", "de": "d'", "que": "qu'"}
+    return builtin(lang, register, cls)
 
 
 def elide_fr(text: str) -> str:
     """French elision before a vowel: le/la → l', de → d', que → qu' (les résultats d'Atlas, parce qu'Ada)."""
-
-    def repl(m: re.Match[str]) -> str:
-        word = m.group(1)
-        out = _ELIDED[word.lower()]
-        return out[0].upper() + out[1:] if word[0].isupper() else out
-
-    return _ELIDE.sub(repl, text)
+    return langs.polish("fr", text)
 
 
 def respell(text: str, mapping: dict[str, str]) -> str:
@@ -108,10 +95,9 @@ def respell(text: str, mapping: dict[str, str]) -> str:
     return text
 
 
-def substitute(text: str, name: str, session: str, gender: str = "") -> str:
-    """Fill {name}, {session} and {his} (his / her); an empty name goes with its comma. Other braces stay."""
-    from .gender import pronoun
-
+def substitute(text: str, name: str, session: str, gender: str = "", lang: str = "en") -> str:
+    """Fill {name}, {session} and {his} (his / her, from the pack); an empty name goes with its comma.
+    Other braces stay as they are."""
     capitalize = False
     if not name.strip():
         for pattern, cap in _DROP_NAME:
@@ -119,9 +105,8 @@ def substitute(text: str, name: str, session: str, gender: str = "") -> str:
             if n:
                 capitalize = cap
                 break
-    text = (
-        text.replace("{name}", name.strip()).replace("{session}", session).replace("{his}", pronoun(gender))
-    )
+    possessive = langs.his(lang, gender) if gender else "their"
+    text = text.replace("{name}", name.strip()).replace("{session}", session).replace("{his}", possessive)
     text = re.sub(r"\s{2,}", " ", text).strip()
     if text and (capitalize or text[0].islower()):
         text = (

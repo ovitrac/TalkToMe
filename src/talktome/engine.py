@@ -15,13 +15,7 @@ import numpy.typing as npt
 from .config import parse_voice
 
 SR = 24000
-LANG_BY_PREFIX = {"a": "en-us", "b": "en-gb", "f": "fr-fr"}
 SPEED_RANGE = (0.5, 2.0)
-
-
-def lang_for(voice_spec: str) -> str:
-    """Kokoro language code from the first voice of a spec (a* en-us, b* en-gb, f* fr-fr)."""
-    return LANG_BY_PREFIX.get(parse_voice(voice_spec)[0][0][0], "en-us")
 
 
 def shift_factor(semitones: float) -> float:
@@ -59,9 +53,12 @@ class Kokoro:
         total = sum(w for _, w in parts)
         return sum(self.k.get_voice_style(name) * (w / total) for name, w in parts)
 
-    def synth(self, text: str, voice_spec: str, speed: float, pitch_st: float) -> npt.NDArray[np.float32]:
+    def synth(
+        self, text: str, voice_spec: str, speed: float, pitch_st: float, lang: str
+    ) -> npt.NDArray[np.float32]:
+        """`lang` is the phonemizer code (langs.kokoro_lang): en-us, en-gb, fr-fr, es, pt-br, it, hi, cmn."""
         y, sr = self.k.create(
-            text, voice=self._style(voice_spec), speed=synth_speed(speed, pitch_st), lang=lang_for(voice_spec)
+            text, voice=self._style(voice_spec), speed=synth_speed(speed, pitch_st), lang=lang
         )
         if sr != SR:
             raise RuntimeError(f"unexpected sample rate {sr}")

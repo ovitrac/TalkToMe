@@ -1,0 +1,130 @@
+# TalkToMe language pack — Portuguese, Brazil (schema talktome-lang/1). "Você".
+# Author: Olivier Vitrac, PhD, HDR — Adservio Innovation Lab — Adservio Group — olivier.vitrac@adservio.fr
+
+schema = "talktome-lang/1"
+code = "pt"
+name = "Português (Brasil)"
+status = "stable"
+default = true
+engine = "kokoro"
+
+[kokoro]
+lang = "pt-br"
+
+[voices]
+f = "pf_dora"
+m = "pm_alex"
+pool_f = ["pf_dora"]
+pool_m = ["pm_alex", "pm_santa"]
+
+[words]
+fallback_session = "esta sessão"
+discreet_session = "uma sessão"
+his = { m = "seu", f = "seu" }
+
+[grammar]
+articles = { a = "f", uma = "f", o = "m", um = "m" }
+skip = ["os", "as", "de", "do", "da", "dos", "das"]
+plural = ["os", "as"]
+elision = []
+contractions = [["de o ", "do "], ["de a ", "da "], ["a o ", "ao "], ["em o ", "no "], ["em a ", "na "]]
+
+[templates.useful]
+help = ["{name}, {session} precisa da sua ajuda."]
+attention = ["{name}, {session} precisa da sua atenção."]
+input = ["{name}, {session} está esperando a sua resposta."]
+landed = ["{name}, os resultados de {session} chegaram."]
+
+[templates.fun]
+help = [
+  "Psiu, {name}. {session} tem uma pergunta que só você pode responder.",
+  "{name}, {session} está numa encruzilhada. A decisão é sua.",
+  "{session} levantou a mão, {name}. Procura-se ajuda.",
+  "{name}, {session} quer uma opinião humana antes de continuar.",
+  "Rapidinho, {name}: {session} precisa que você decida.",
+]
+attention = [
+  "Toc, toc, {name}. {session} espera o seu sinal verde.",
+  "{name}, {session} está na porta esperando a sua aprovação.",
+  "Com licença, {name}: {session} precisa da sua assinatura.",
+  "{session} está prendendo a respiração, {name}. Pode autorizar?",
+  "{name}, um clique seu e {session} volta ao trabalho.",
+]
+input = [
+  "Sua vez, {name}. {session} está esperando.",
+  "{session} é todo ouvidos, {name}.",
+  "{name}, {session} já disse o que tinha a dizer. A palavra é sua.",
+  "Quando quiser, {name}, {session} está ouvindo.",
+  "{session} está de braços cruzados, {name}.",
+]
+landed = [
+  "Tcharam! {session} entregou, {name}.",
+  "{name}, resultados fresquinhos de {session}, ainda quentes.",
+  "Missão cumprida para {session}. Vem ver, {name}.",
+  "{session} deixou o trabalho na sua mesa, {name}.",
+  "Boa notícia, {name}: {session} terminou.",
+]
+
+[joke]
+items = [
+  "O que o pato disse para a pata? Vem quá!",
+  "Por que a vaca foi para o espaço? Para se encontrar com a Via Láctea.",
+  "O que é um pontinho amarelo no céu? Um yellowcóptero.",
+  "Qual é o café mais perigoso do mundo? O ex-presso.",
+  "O que uma impressora disse para a outra? Essa folha é sua ou é impressão minha?",
+  "Por que o computador foi ao médico? Porque estava com vírus.",
+  "O que o tomate foi fazer no banco? Tirar extrato.",
+  "Quantos programadores são necessários para trocar uma lâmpada? Nenhum: é problema de hardware.",
+  "Por que a plantinha não foi atendida no hospital? Porque só tinha médico de plantão.",
+  "O que o zero disse para o oito? Que cinto bonito!",
+  "Qual é o peixe que caiu do décimo andar? Aaaah, tum!",
+  "Qual é o cúmulo do eletricista? Não estar por dentro da corrente.",
+]
+
+[fact]
+items = [
+  "Você sabia que os polvos têm três corações e sangue azul?",
+  "Você sabia que, em Vênus, um dia dura mais do que um ano?",
+  "Você sabia que as bananas são levemente radioativas, por causa do potássio que contêm?",
+  "Você sabia que há mais árvores na Terra do que estrelas na Via Láctea?",
+  "Você sabia que Cleópatra viveu mais perto de nós no tempo do que da construção da Grande Pirâmide de Gizé?",
+  "Você sabia que os vombates fazem cocô em forma de cubo?",
+  "Você sabia que a Universidade de Oxford é mais antiga que o Império Asteca?",
+  "Você sabia que um raio é cerca de cinco vezes mais quente que a superfície do Sol?",
+  "Você sabia que as lontras-marinhas dão as mãos enquanto dormem, para não se afastarem?",
+  "Você sabia que, em mil novecentos e quarenta e sete, uma mariposa de verdade, presa num relé do Harvard Mark Dois, foi registrada como o primeiro caso real de bug?",
+  "Você sabia que o DNA de uma única célula humana, esticado, mede cerca de dois metros?",
+  "Você sabia que os flamingos são cor-de-rosa por causa dos pigmentos do que comem?",
+  "Você sabia que a luz do Sol leva cerca de oito minutos e vinte segundos para chegar até nós?",
+  "Você sabia que o animal nacional da Escócia é o unicórnio?",
+  "Você sabia que o coração do camarão fica na cabeça?",
+]
+
+[why]
+special = [
+  "Por que não?",
+  "Não pergunte.",
+  "Porque os testes disseram.",
+  "Na hora pareceu uma boa ideia.",
+  "Pergunte ao compilador.",
+  "Está na especificação.",
+  "Por razões históricas.",
+  "Na minha máquina funciona.",
+  "Sem comentários.",
+  "Porque é sexta-feira.",
+]
+names = ["Ada", "Alan", "Grace", "Linus", "Margaret", "Dennis", "Barbara", "Edsger", "Frances", "Donald"]
+adjectives = [
+  ["sonolento", "sonolenta"], ["brilhante", "brilhante"], ["nervoso", "nervosa"], ["aposentado", "aposentada"],
+  ["misterioso", "misteriosa"], ["inquieto", "inquieta"], ["generoso", "generosa"], ["teimoso", "teimosa"],
+  ["esgotado", "esgotada"], ["acelerado", "acelerada"],
+]
+nouns = [
+  ["engenheiro", "m"], ["matemática", "f"], ["estagiário", "m"], ["chefe de projeto", "f"], ["hamster", "m"],
+  ["compilador", "m"], ["arquiteta", "f"], ["cliente", "f"], ["auditor", "m"], ["robô", "m"],
+]
+verbs = ["quis assim", "pediu", "aprovou", "exigiu", "sugeriu", "sonhou com isso", "reclamou", "impôs"]
+goals = ["impressionar", "tranquilizar", "confundir", "agradar", "surpreender", "satisfazer", "divertir", "enganar"]
+articles = { m = "o", f = "a" }
+np = "{art} {noun} {adj}"
+patterns = ["Porque {subject} {verb}.", "Para {goal} {np}.", "Foi {subject} que pediu."]

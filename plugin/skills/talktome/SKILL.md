@@ -25,7 +25,7 @@ It returns at once; the speech is queued behind other sessions.
   outcome they should hear (a failure, a decision to take, a notable result). Never narrate routine progress. At
   most one message per turn.
 - **What.** One or two short, natural sentences in the configured language (`talktome show` → `language`; French
-  uses *tu*). Write `{name}` to address the user and `{session}` for this session's spoken name; TalkToMe fills
+  uses *tu*, Spanish *tú*, Portuguese *você*, Italian *tu*). Write `{name}` to address the user and `{session}` for this session's spoken name; TalkToMe fills
   both. Example: `talktome say --mood sorry "{name}, the build failed on {session}. Two tests are red."`
 - **Mood.** `neutral`, `warm`, `calm`, `cheerful`, `firm`, `urgent`, `sorry` — pick the one that fits the
   outcome.
@@ -43,7 +43,8 @@ Run the matching command, then report the result in one line.
 
 | Arguments | Command |
 |---|---|
-| `en`, `fr` | `talktome set language en` (or `fr`) |
+| `en`, `fr`, `es`, `pt`, `it`, `hi`, `zh` | `talktome set language CODE` (an installed language; see `talktome lang`) |
+| `lang`, `lang add CODE`, `lang remove CODE` | `talktome lang`, `talktome lang add CODE`, `talktome lang remove CODE` |
 | `useful`, `fun` | `talktome set register useful` (or `fun`) |
 | `voice NAME` | `talktome set voices.LANG.G NAME` (current language; G = the voice's gender, second letter of its name: `bf_emma` → f, `bm_lewis` → m); list: `talktome voices --lang LANG` |
 | `speed X` | `talktome set speed.LANG X` with the current language (0.5–2.0) |

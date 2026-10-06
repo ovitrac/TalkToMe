@@ -5,7 +5,8 @@ and mood.
 
 > *"Hi Olivier, I need your help on…"* · *"The results of [THIS SESSION] landed."*
 
-**Status:** v0.2.0 — speech, command line, Claude Code hooks, plugin and `/talktome` skill, per-session modes. Design:
+**Status:** v0.3.0 — speech, command line, Claude Code hooks, plugin and `/talktome` skill, per-session modes,
+language packs. Design:
 `base/DESIGN_TALKTOME_20261006.md`; decisions: `base/DECISIONS.md`; changes: `CHANGELOG.md`.
 
 ## Intent
@@ -28,7 +29,7 @@ with the other Adservio tools.
 1. The speaking engine (Python ≥ 3.11; Linux; macOS should work through `afplay` but is untested):
 
    ```bash
-   pipx install git+https://github.com/ovitrac/TalkToMe@v0.2.0
+   pipx install git+https://github.com/ovitrac/TalkToMe@v0.3.0
    talktome setup --name "Your name" --fetch   # Kokoro model files, 338 MB, SHA-256 checked
    talktome doctor
    ```
@@ -74,6 +75,26 @@ talktome gender f                      # or m; auto to improvise again
 talktome mute 30                       # minutes, every session; `talktome unmute`
 talktome joke                          # a joke; also: talktome fact, talktome why
 ```
+
+## Languages
+
+| Code | Language | Voices (female / male) | Status |
+|---|---|---|---|
+| `en` | English | 3 / 3 (pool) | default |
+| `fr` | Français | 1 voice for everyone | default |
+| `es` | Español | 1 / 2 | default |
+| `pt` | Português (Brasil) | 1 / 2 | default |
+| `it` | Italiano | 1 / 1 | default |
+| `hi` | हिन्दी (Hindi) | 2 / 2 | experimental |
+| `zh` | 中文 (Mandarin) | 4 / 4 | experimental |
+
+```bash
+talktome lang                          # installed and available packs
+talktome set language es               # or /talktome es inside Claude Code
+talktome lang remove zh                # or: talktome lang add zh
+```
+
+All of them use the Kokoro voices already installed. Experimental packs have not been reviewed by native speakers.
 
 ## Confidential sessions
 

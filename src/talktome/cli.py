@@ -18,7 +18,7 @@ from dataclasses import replace
 from pathlib import Path
 from typing import Any, Callable
 
-from . import __version__, config, paths, state
+from . import __version__, config, langs, paths, state
 from .decide import Event, Utterance, decide
 from .moods import MOODS
 
@@ -232,10 +232,50 @@ def cmd_voices(a: argparse.Namespace) -> int:
     d = models.resolve_dir(cfg)
     if d is None:
         return _err("no model directory configured (talktome setup)")
-    prefixes = {"en": ("a", "b"), "fr": ("f",)}.get(a.lang or "", None)
+    prefixes = tuple(langs.voice_prefixes(a.lang)) if a.lang else None
     for v in engine.Kokoro(d).voices():
         if prefixes is None or v.startswith(prefixes):
             print(v)
+    return 0
+
+
+def cmd_lang(a: argparse.Namespace) -> int:
+    """List, add or remove language packs (design §9)."""
+    cfg = _load(required=False)
+    if cfg is None:
+        return 2
+    if a.action != "list" and not a.code:
+        return _err(f"`talktome lang {a.action} CODE` (available: {', '.join(langs.codes())})")
+    installed: list[str] = list(cfg["languages"])
+    if a.action == "list":
+        for code in langs.codes():
+            p, v = langs.pack(code), langs.pack(code)["voices"]
+            state_ = (
+                "speaking" if code == cfg["language"] else "installed" if code in installed else "available"
+            )
+            status = "" if p["status"] == "stable" else f" ({p['status']})"
+            print(f"{code:3} {state_:9} {p['name']}{status} — {p['engine']}, voices {v['f']} / {v['m']}")
+        return 0
+    if a.code not in langs.codes():
+        return _err(f"no language pack {a.code!r} (available: {', '.join(langs.codes())})")
+    if a.action == "add":
+        if a.code in installed:
+            print(f"{a.code} is already installed")
+            return 0
+        if langs.pack(a.code)["engine"] != "kokoro":
+            return _err(f"{a.code} needs the {langs.pack(a.code)['engine']} engine, not available yet")
+        cfg["languages"] = [*installed, a.code]
+        config.save(cfg)
+        print(f"{a.code} installed — `talktome set language {a.code}` to speak it")
+        return 0
+    if a.code == cfg["language"]:
+        return _err(f"{a.code} is the language in use; switch first (`talktome set language en`)")
+    if a.code not in installed:
+        print(f"{a.code} is not installed")
+        return 0
+    cfg["languages"] = [c for c in installed if c != a.code]
+    config.save(cfg)
+    print(f"{a.code} removed")
     return 0
 
 
@@ -363,6 +403,8 @@ def cmd_setup(a: argparse.Namespace) -> int:
         cfg["name"] = a.name
     if a.language:
         cfg["language"] = a.language
+        if a.language not in cfg["languages"]:
+            cfg["languages"] = [*cfg["languages"], a.language]
     if a.models_dir:
         d = Path(a.models_dir).expanduser().resolve()
         print(f"verifying {d} …")
@@ -456,8 +498,13 @@ def parser() -> argparse.ArgumentParser:
     sub.add_parser("show", help="print the effective configuration").set_defaults(func=cmd_show)
 
     s = sub.add_parser("voices", help="list the available voices")
-    s.add_argument("--lang", choices=config.LANGUAGES)
+    s.add_argument("--lang", choices=langs.codes())
     s.set_defaults(func=cmd_voices)
+
+    s = sub.add_parser("lang", help="language packs: list, add CODE, remove CODE")
+    s.add_argument("action", nargs="?", choices=("list", "add", "remove"), default="list")
+    s.add_argument("code", nargs="?")
+    s.set_defaults(func=cmd_lang)
 
     s = sub.add_parser("mute", help="silence TalkToMe (indefinitely, or for MINUTES)")
     s.add_argument("minutes", nargs="?", type=float)
@@ -469,7 +516,7 @@ def parser() -> argparse.ArgumentParser:
     s.add_argument("--class", dest="cls", choices=config.CLASSES, default="landed")
     s.add_argument("--mood", choices=sorted(MOODS))
     s.add_argument("--register", choices=config.REGISTERS)
-    s.add_argument("--language", choices=config.LANGUAGES)
+    s.add_argument("--language", choices=langs.codes())
     s.set_defaults(func=cmd_test)
 
     sub.add_parser("doctor", help="check configuration, models, player and PATH").set_defaults(
@@ -478,7 +525,7 @@ def parser() -> argparse.ArgumentParser:
 
     s = sub.add_parser("setup", help="create the configuration, locate or fetch the models, link the command")
     s.add_argument("--name", help="how TalkToMe addresses you (empty: no name)")
-    s.add_argument("--language", choices=config.LANGUAGES)
+    s.add_argument("--language", choices=langs.codes())
     g = s.add_mutually_exclusive_group()
     g.add_argument("--models-dir", help="directory holding kokoro-v1.0.onnx and voices-v1.0.bin")
     g.add_argument("--fetch", action="store_true", help="download the model files (network)")

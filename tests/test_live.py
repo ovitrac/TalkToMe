@@ -14,7 +14,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from talktome import engine
+from talktome import engine, langs
 
 pytestmark = pytest.mark.skipif(
     os.environ.get("TALKTOME_LIVE") != "1" or not os.environ.get("TALKTOME_MODELS_DIR"),
@@ -49,24 +49,28 @@ def f0_median(y: np.ndarray, sr: int = engine.SR) -> float:
     return float(np.median(f0))
 
 
-@pytest.mark.parametrize(
-    "voice, text",
-    [("bm_george", "The results of Alpha landed."), ("ff_siwis", "Les résultats de Alpha sont déposés.")],
-)
-def test_renders(kokoro: engine.Kokoro, voice: str, text: str) -> None:
-    y = kokoro.synth(text, voice, 1.0, 0.0)
-    assert 1.0 < len(y) / engine.SR < 6.0 and float(np.max(np.abs(y))) > 0.05
+@pytest.mark.parametrize("code", langs.codes())
+def test_every_language_renders(kokoro: engine.Kokoro, code: str) -> None:
+    from talktome import catalog
+
+    voices = set(kokoro.voices())
+    for g in ("f", "m"):
+        assert langs.voice(code, g) in voices and set(langs.pool(code, g)) <= voices
+    text = catalog.substitute(catalog.builtin(code, "useful", "landed")[0], "Ada", "Merlin", "m", code)
+    v = langs.voice(code, "m")
+    y = kokoro.synth(text, v, 1.0, 0.0, langs.kokoro_lang(code, v))
+    assert 1.0 < len(y) / engine.SR < 8.0 and float(np.max(np.abs(y))) > 0.05
 
 
 def test_blend_renders(kokoro: engine.Kokoro) -> None:
-    y = kokoro.synth("The results of Alpha landed.", "bm_george:0.7+bm_fable:0.3", 1.0, 0.0)
+    y = kokoro.synth("The results of Alpha landed.", "bm_george:0.7+bm_fable:0.3", 1.0, 0.0, "en-gb")
     assert len(y) > engine.SR
 
 
 @pytest.mark.parametrize("semitones", [-2.0, 2.0])
 def test_pitch_shift_keeps_duration_and_moves_f0(kokoro: engine.Kokoro, semitones: float) -> None:
     text = "Hi Ada, the results of Alpha landed."
-    y0 = kokoro.synth(text, "bm_george", 1.0, 0.0)
-    y1 = kokoro.synth(text, "bm_george", 1.0, semitones)
+    y0 = kokoro.synth(text, "bm_george", 1.0, 0.0, "en-gb")
+    y1 = kokoro.synth(text, "bm_george", 1.0, semitones, "en-gb")
     assert len(y1) / len(y0) == pytest.approx(1.0, rel=0.05)
     assert f0_median(y1) / f0_median(y0) == pytest.approx(engine.shift_factor(semitones), rel=0.04)

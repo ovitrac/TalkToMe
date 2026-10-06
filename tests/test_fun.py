@@ -11,25 +11,28 @@ import re
 
 import pytest
 
-from talktome import catalog, cli, config, fun, player, worker
+from talktome import catalog, cli, fun, langs, player, worker
 from talktome.decide import Utterance
 
 # --- content ---------------------------------------------------------------------------------------------
 
 
+STABLE = [c for c in langs.codes() if langs.pack(c)["status"] == "stable"]
+
+
 @pytest.mark.parametrize("kind", fun.KINDS)
-@pytest.mark.parametrize("lang", config.LANGUAGES)
+@pytest.mark.parametrize("lang", langs.codes())
 def test_content(kind: str, lang: str) -> None:
     pool = fun.items(kind, lang)
-    assert len(pool) >= 12 and len(set(pool)) == len(pool)
+    assert len(pool) >= (12 if lang in STABLE else 3) and len(set(pool)) == len(pool)
     for t in pool:
         assert len(t) <= 280 and not re.search(
             r"[{}]|\d", t
         ), t  # spoken as written: no digits, no placeholders
 
 
-def test_both_languages_have_the_same_facts() -> None:
-    assert len(fun.items("fact", "en")) == len(fun.items("fact", "fr"))
+def test_stable_languages_have_the_same_facts() -> None:
+    assert {len(fun.items("fact", c)) for c in STABLE} == {15}
 
 
 def test_deck_never_repeats_before_the_end() -> None:
@@ -48,13 +51,28 @@ def test_pick_persists_the_deck() -> None:
 # --- why -------------------------------------------------------------------------------------------------
 
 
-@pytest.mark.parametrize("lang", config.LANGUAGES)
+@pytest.mark.parametrize("lang", langs.codes())
 def test_why_is_reproducible_and_grammatical(lang: str) -> None:
     answers = [fun.why(lang, random.Random(seed)) for seed in range(300)]
     assert answers == [fun.why(lang, random.Random(seed)) for seed in range(300)]
-    assert len(set(answers)) > 100
+    assert len(set(answers)) > (100 if lang in STABLE else 3)
     for a in answers:
-        assert a[0].isupper() and a.rstrip()[-1] in ".?!", a
+        assert a.rstrip()[-1] in ".?!।。？", a
+        first = a.lstrip("¡¿")[0]
+        assert (
+            first.isupper() or not first.isalpha() or not first.isascii() and first.lower() == first.upper()
+        ), a
+        assert "{" not in a, a
+
+
+def test_why_spanish_contractions() -> None:
+    joined = " ".join({fun.why("es", random.Random(seed)) for seed in range(2000)})
+    assert " a el " not in joined and " de el " not in joined and " al " in joined
+
+
+def test_why_italian_articles() -> None:
+    joined = " ".join({fun.why("it", random.Random(seed)) for seed in range(2000)})
+    assert "l'ingegnere" in joined and "lo stagista" in joined and "il ingegnere" not in joined
 
 
 def test_why_french_agreement_and_elision() -> None:

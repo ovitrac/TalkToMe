@@ -191,7 +191,7 @@ def test_fun_rotation_never_repeats(lang: str, cls_event: str, cfg: dict[str, An
         texts.append(d.utterance.text)
         st = d.state
     assert all(a != b for a, b in zip(texts, texts[1:]))
-    assert len(set(texts)) == len(catalog.builtin()["fun"][lang][cls_event])
+    assert len(set(texts)) == len(catalog.builtin(lang, "fun", cls_event))
 
 
 def test_fun_voice_per_session(cfg: dict[str, Any]) -> None:

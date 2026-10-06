@@ -96,13 +96,15 @@ def test_set_value_refuses(cfg: dict[str, Any], key: str, raw: str) -> None:
 def test_speed_per_language(cfg: dict[str, Any]) -> None:
     cfg["speed"] = 1.1  # one number for all languages, as older files have it
     out = config.set_value(cfg, "speed.en", "1.2")
-    assert out["speed"] == {"en": 1.2, "fr": 1.1}
+    assert out["speed"] == {**{c: 1.1 for c in cfg["languages"]}, "en": 1.2}
     assert (config.speed_for(out, "en"), config.speed_for(out, "fr")) == (1.2, 1.1)
     assert config.speed_for(cfg, "fr") == 1.1
     with pytest.raises(config.ConfigError):
         config.set_value(out, "speed.en", "2.5")
+    assert config.set_value(out, "speed", '{"en": 1.2}')["speed"] == {"en": 1.2}  # others: 1.0
+    assert config.speed_for(config.set_value(out, "speed", '{"en": 1.2}'), "es") == 1.0
     with pytest.raises(config.ConfigError):
-        config.set_value(out, "speed", '{"en": 1.2}')
+        config.set_value(out, "speed", '{"xx": 1.2}')
 
 
 def test_parse_voice() -> None:

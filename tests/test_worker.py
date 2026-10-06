@@ -53,7 +53,7 @@ class StubKokoro:
     def __init__(self, models_dir: Path) -> None:
         pass
 
-    def synth(self, text: str, voice: str, speed: float, pitch: float) -> np.ndarray:
+    def synth(self, text: str, voice: str, speed: float, pitch: float, lang: str) -> np.ndarray:
         StubKokoro.calls += 1
         return (0.5 * np.sin(2 * np.pi * 220 * np.arange(2400) / engine.SR)).astype(np.float32)
 

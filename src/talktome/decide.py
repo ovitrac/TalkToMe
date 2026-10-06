@@ -15,14 +15,12 @@ from fnmatch import fnmatch
 from pathlib import PurePath, PurePosixPath
 from typing import Any
 
-from . import catalog, config, gender, moods
+from . import catalog, config, gender, langs, moods
 from .state import SessionState
 
 # Notification types and tools that block Claude until the user acts.
 HELP_TOOLS = frozenset({"AskUserQuestion", "ExitPlanMode"})
 NOTIFICATIONS = {"permission_prompt": "attention", "idle_prompt": "input", "elicitation_dialog": "help"}
-FALLBACK_SESSION = {"en": "this session", "fr": "cette session"}
-DISCREET_SESSION = {"en": "a session", "fr": "une session"}
 DELIBERATE = ("say", "fun")  # messages asked for, not alerts: free text (say) or canned (joke, fact, why)
 FR_PITCH_OFFSETS = (-2.0, -1.0, 0.0, 1.0, 2.0)
 PITCH_LIMIT = 4.0
@@ -92,7 +90,7 @@ def session_name(event: Event, st: SessionState, lang: str) -> str:
     for candidate in (st.name, event.session_name, PurePath(event.cwd).name if event.cwd else ""):
         if candidate and candidate.strip():
             return candidate.strip()
-    return FALLBACK_SESSION[lang]
+    return langs.word(lang, "fallback_session")
 
 
 def session_mode(event: Event, st: SessionState, cfg: dict[str, Any]) -> tuple[str, str]:
@@ -110,12 +108,12 @@ def session_mode(event: Event, st: SessionState, cfg: dict[str, Any]) -> tuple[s
     return "on", "default"
 
 
-def session_gender(st: SessionState, cfg: dict[str, Any], session: str) -> str:
+def session_gender(st: SessionState, cfg: dict[str, Any], session: str, lang: str = "en") -> str:
     """Gender set for the session, else the user's map, else improvised from the name."""
     if st.gender in config.GENDERS:
         return st.gender
     mapped = cfg["genders"].get(session)
-    return mapped if mapped in config.GENDERS else gender.guess(session)[0]
+    return mapped if mapped in config.GENDERS else gender.guess(session, lang)[0]
 
 
 def _voice_and_pitch(
@@ -127,13 +125,12 @@ def _voice_and_pitch(
     pitch = mood_pitch
     if cfg["fun"]["voice_per_session"]:
         h = zlib.crc32(session.encode("utf-8"))
-        if (
-            lang == "en"
-        ):  # a voice of the session's gender: the second letter of a Kokoro name (bf_, bm_, af_, am_)
-            pool = [v for v in cfg["fun"]["voice_pool"] if v[1] == sex] or [voice]
-            voice = pool[h % len(pool)]
-        else:  # one French voice: sessions differ by pitch
+        if langs.distinct_voices(lang) <= 1:  # one voice (French): sessions differ by pitch
             pitch += FR_PITCH_OFFSETS[h % len(FR_PITCH_OFFSETS)]
+        else:  # a voice of the session's gender: second letter of a Kokoro name (bf_, bm_, ef_, em_…)
+            candidates = cfg["fun"]["voice_pool"] if lang == "en" else langs.pool(lang, sex)
+            pool = [v for v in candidates if v[1] == sex] or [voice]
+            voice = pool[h % len(pool)]
     return voice, max(-PITCH_LIMIT, min(PITCH_LIMIT, pitch))
 
 
@@ -143,15 +140,15 @@ def build(
     """Compose the utterance for class `cls`; returns it with the rotation state to keep."""
     lang, register = cfg["language"], cfg["register"]
     if mode == "discreet":  # no name, no gender of its own: nothing that identifies the session
-        session = DISCREET_SESSION[lang]
-        sex = gender.guess(session)[0]
+        session = langs.word(lang, "discreet_session")
+        sex = gender.guess(session, lang)[0]
     else:
         session = session_name(event, st, lang)
-        sex = session_gender(st, cfg, session)
+        sex = session_gender(st, cfg, session, lang)
     mood = moods.get(event.mood or cfg["moods"].get(cls, "neutral"))
     variants = st.variants
     if event.kind in DELIBERATE:
-        text = catalog.substitute(event.text, cfg["name"], session, sex)
+        text = catalog.substitute(event.text, cfg["name"], session, sex, lang)
     else:
         pool = catalog.templates(cfg, register, lang, cls)
         idx = 0
@@ -159,9 +156,8 @@ def build(
             last = st.variants.get(cls)
             idx = rng.choice([i for i in range(len(pool)) if i != last])
         variants = {**st.variants, cls: idx}
-        text = catalog.substitute(pool[idx], cfg["name"], session, sex)
-    if lang == "fr":
-        text = catalog.elide_fr(text)
+        text = catalog.substitute(pool[idx], cfg["name"], session, sex, lang)
+    text = langs.polish(lang, text)
     voice, pitch = _voice_and_pitch(cfg, lang, session, sex, mood.pitch_st)
     utt = Utterance(
         session_id=event.session_id,

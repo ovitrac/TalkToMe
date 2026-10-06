@@ -12,15 +12,14 @@ import re
 from pathlib import Path
 from typing import Any
 
-from . import paths
+from . import langs, paths
 from .moods import MOODS
 
 SCHEMA = "talktome-config/1"
-LANGUAGES = ("en", "fr")
 REGISTERS = ("useful", "fun")
 CLASSES = ("help", "attention", "input", "landed")
 PLAYERS = ("auto", "pw-play", "paplay", "aplay", "afplay", "ffplay", "mpv")
-FREE_KEYS = ("templates", "respell", "genders", "private")
+FREE_KEYS = ("templates", "respell", "genders", "private", "voices", "speed")
 GENDERS = ("f", "m")
 MODES = ("on", "discreet", "off")
 
@@ -28,9 +27,10 @@ DEFAULTS: dict[str, Any] = {
     "schema": SCHEMA,
     "name": "",
     "language": "en",
+    "languages": list(langs.DEFAULT_LANGUAGES),
     "register": "useful",
-    "voices": {"en": {"f": "bf_emma", "m": "bm_george"}, "fr": {"f": "ff_siwis", "m": "ff_siwis"}},
-    "speed": {"en": 1.0, "fr": 1.0},
+    "voices": {},  # overrides of the packs' voices: {"en": "bm_lewis"} or {"en": {"f": "af_heart", "m": "…"}}
+    "speed": 1.0,  # one number for every language, or {"en": 1.2, "fr": 1.0}
     "volume": 1.0,
     "earcons": True,
     "mute": False,
@@ -130,13 +130,22 @@ def validate(cfg: dict[str, Any]) -> list[str]:
         e.append(f"schema must be {SCHEMA!r}")
     if not isinstance(cfg.get("name"), str):
         e.append("name must be a string")
-    if cfg.get("language") not in LANGUAGES:
-        e.append(f"language must be one of {LANGUAGES}")
+    installed = cfg.get("languages")
+    if (
+        not isinstance(installed, list)
+        or not installed
+        or len(set(installed)) != len(installed)
+        or not set(installed) <= set(langs.codes())
+    ):
+        e.append(f"languages must be a non-empty list of distinct packs among {langs.codes()}")
+        installed = []
+    if cfg.get("language") not in installed:
+        e.append(f"language must be an installed language ({', '.join(installed)}; `talktome lang add`)")
     if cfg.get("register") not in REGISTERS:
         e.append(f"register must be one of {REGISTERS}")
     voices = cfg.get("voices")
-    if not isinstance(voices, dict) or set(voices) != set(LANGUAGES):
-        e.append(f"voices must map exactly {LANGUAGES} to a voice, or to one voice per gender {GENDERS}")
+    if not isinstance(voices, dict) or not set(voices) <= set(langs.codes()):
+        e.append(f"voices must map languages among {langs.codes()} to a voice, or to one voice per gender")
     else:
         for lang, spec in voices.items():
             specs = spec if isinstance(spec, dict) else {g: spec for g in GENDERS}
@@ -149,9 +158,11 @@ def validate(cfg: dict[str, Any]) -> list[str]:
                 except (ValueError, AttributeError) as x:
                     e.append(f"voices.{lang}.{g}: {x}")
     speed: Any = cfg.get("speed")
-    speeds: dict[str, Any] = speed if isinstance(speed, dict) else {lang: speed for lang in LANGUAGES}
-    if set(speeds) != set(LANGUAGES) or not all(_is_num(v) and 0.5 <= v <= 2.0 for v in speeds.values()):
-        e.append(f"speed must be a number in [0.5, 2.0], or one per language {LANGUAGES}")
+    speeds: dict[str, Any] = speed if isinstance(speed, dict) else {"*": speed}
+    if not set(speeds) <= {"*", *langs.codes()} or not all(
+        _is_num(v) and 0.5 <= v <= 2.0 for v in speeds.values()
+    ):
+        e.append("speed must be a number in [0.5, 2.0], or one per language")
     if not _is_num(cfg.get("volume")) or not 0.0 <= cfg["volume"] <= 2.0:
         e.append("volume must be a number in [0, 2]")
     for k in ("earcons", "mute"):
@@ -240,7 +251,9 @@ def set_value(cfg: dict[str, Any], dotted: str, raw: str) -> dict[str, Any]:
             value = raw
     out = copy.deepcopy(cfg)
     if keys[0] == "speed" and len(keys) == 2 and not isinstance(out["speed"], dict):
-        out["speed"] = {lang: out["speed"] for lang in LANGUAGES}  # one number for all → one per language
+        out["speed"] = {
+            lang: out["speed"] for lang in out["languages"]
+        }  # one number for all → one per language
     if keys[0] == "voices" and len(keys) == 3 and isinstance(out["voices"].get(keys[1]), str):
         out["voices"][keys[1]] = {g: out["voices"][keys[1]] for g in GENDERS}  # one voice → one per gender
     node = out
@@ -257,14 +270,16 @@ def set_value(cfg: dict[str, Any], dotted: str, raw: str) -> dict[str, Any]:
 
 def voice_for(cfg: dict[str, Any], lang: str, gender: str) -> str:
     """Voice for `lang` and `gender`: `voices.<lang>` is one voice for both genders or one per gender."""
-    spec = cfg["voices"][lang]
+    spec = cfg["voices"].get(lang)
+    if spec is None:
+        return langs.voice(lang, gender)
     return str(spec[gender] if isinstance(spec, dict) else spec)
 
 
 def speed_for(cfg: dict[str, Any], lang: str) -> float:
     """Base speaking rate for `lang`: `speed` is one number for all languages or one per language."""
     speed = cfg["speed"]
-    return float(speed[lang] if isinstance(speed, dict) else speed)
+    return float(speed.get(lang, 1.0) if isinstance(speed, dict) else speed)
 
 
 def is_muted(cfg: dict[str, Any], now: float) -> bool:

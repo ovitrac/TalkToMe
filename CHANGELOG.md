@@ -9,6 +9,31 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.3.0] — 2026-10-06
+
+### Added
+
+- **Language packs** (`src/talktome/lang/<code>.toml`): alerts (sober and playful), jokes, facts, `why`, voices,
+  grammar (articles, elision, contractions) and the gender cues of one language. Installed by default: English,
+  French, Spanish, Portuguese (Brazil), Italian; experimental (pronunciation not reviewed): Hindi, Mandarin. All
+  speak through the Kokoro voices already installed — no extra download.
+- **`talktome lang [list | add CODE | remove CODE]`**; `talktome set language CODE` accepts installed languages.
+- Native jokes and the same fifteen facts in every stable language; `why` with agreeing articles and adjectives
+  (Spanish "al", Italian "l'"/"lo").
+
+### Changed
+
+- The templates, jokes, facts and `why` lists moved from `catalog.toml` and `fun.toml` into the language packs.
+- Configuration: `languages` (installed packs); `voices` and `speed` are optional overrides per language (the
+  packs give the defaults). Files written by 0.2.0 load unchanged.
+- Audio cache keys include the language (cache version 2).
+
+### Not included
+
+- Japanese: Kokoro's built-in phonemizer reads kanji as the English words "Japanese letter"; correct Japanese
+  needs an extra phonemizer.
+- German, European Portuguese and other Piper languages: next release.
+
 ## [0.2.0] — 2026-10-06
 
 ### Added

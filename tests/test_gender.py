@@ -66,9 +66,9 @@ def test_pronoun() -> None:
 
 
 def test_no_session_is_called_it() -> None:
-    for reg in config.REGISTERS:
-        for cls in config.CLASSES:
-            for t in catalog.builtin()[reg]["en"][cls]:
+    for reg in catalog.REGISTERS:
+        for cls in catalog.CLASSES:
+            for t in catalog.builtin("en", reg, cls):
                 assert not re.search(r"\b(it|its)\b", t, re.IGNORECASE), t
 
 

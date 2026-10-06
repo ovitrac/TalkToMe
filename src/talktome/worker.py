@@ -22,11 +22,11 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Any
 
-from . import catalog, config, journal, models, paths, player
+from . import catalog, config, journal, langs, models, paths, player
 from .decide import Utterance
 
 LOCK_TIMEOUT_S = 90.0
-CACHE_VERSION = 1
+CACHE_VERSION = 2
 
 
 @contextmanager
@@ -56,6 +56,7 @@ def cache_key(u: Utterance, spoken_text: str, model_id: str, volume: float) -> s
         "v": CACHE_VERSION,
         "text": spoken_text,
         "voice": u.voice,
+        "lang": u.lang,
         "speed": round(u.speed, 4),
         "pitch": round(u.pitch_st, 3),
         "earcon": u.mood if u.earcon else None,
@@ -82,7 +83,8 @@ def render(u: Utterance, cfg: dict[str, Any]) -> tuple[Path, dict[str, Any]]:
     from . import earcon, engine, moods
 
     t0 = time.monotonic()
-    y = engine.Kokoro(models_dir).synth(spoken, u.voice, u.speed, u.pitch_st)
+    lang = langs.kokoro_lang(u.lang, u.voice)
+    y = engine.Kokoro(models_dir).synth(spoken, u.voice, u.speed, u.pitch_st, lang)
     if u.earcon:
         y = earcon.with_speech(earcon.render(moods.get(u.mood)), y)
     y = y * float(cfg["volume"])

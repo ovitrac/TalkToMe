@@ -1,0 +1,131 @@
+# TalkToMe language pack — Italian (schema talktome-lang/1). "Tu".
+# Author: Olivier Vitrac, PhD, HDR — Adservio Innovation Lab — Adservio Group — olivier.vitrac@adservio.fr
+
+schema = "talktome-lang/1"
+code = "it"
+name = "Italiano"
+status = "stable"
+default = true
+engine = "kokoro"
+
+[kokoro]
+lang = "it"
+
+[voices]
+f = "if_sara"
+m = "im_nicola"
+pool_f = ["if_sara"]
+pool_m = ["im_nicola"]
+
+[words]
+fallback_session = "questa sessione"
+discreet_session = "una sessione"
+his = { m = "suo", f = "suo" }
+
+[grammar]
+articles = { la = "f", una = "f", il = "m", lo = "m", un = "m", uno = "m" }
+skip = ["i", "gli", "le", "di", "del", "della"]
+plural = ["i", "gli", "le"]
+elision = []
+contractions = []
+
+[templates.useful]
+help = ["{name}, {session} ha bisogno del tuo aiuto."]
+attention = ["{name}, {session} ha bisogno della tua attenzione."]
+input = ["{name}, {session} aspetta la tua risposta."]
+landed = ["{name}, i risultati di {session} sono arrivati."]
+
+[templates.fun]
+help = [
+  "Psst, {name}. {session} ha una domanda a cui solo tu puoi rispondere.",
+  "{name}, {session} è a un bivio. Decidi tu.",
+  "{session} alza la mano, {name}. Cercasi aiuto.",
+  "{name}, {session} vorrebbe un parere umano prima di andare avanti.",
+  "Una cosa veloce, {name}: {session} ha bisogno che tu decida.",
+]
+attention = [
+  "Toc toc, {name}. {session} aspetta il tuo via libera.",
+  "{name}, {session} aspetta alla porta la tua approvazione.",
+  "Scusa, {name}: {session} ha bisogno della tua firma.",
+  "{session} trattiene il respiro, {name}. Permesso?",
+  "{name}, un tuo clic e {session} riparte.",
+]
+input = [
+  "Tocca a te, {name}. {session} ti aspetta.",
+  "{session} è tutt'orecchi, {name}.",
+  "{name}, {session} ha detto la sua. A te la parola.",
+  "Quando vuoi, {name}, {session} ti ascolta.",
+  "{session} si gira i pollici, {name}.",
+]
+landed = [
+  "Tadà! {session} ha consegnato, {name}.",
+  "{name}, risultati freschi da {session}, ancora caldi.",
+  "Missione compiuta per {session}. Vieni a vedere, {name}.",
+  "{session} ha lasciato il suo lavoro sulla tua scrivania, {name}.",
+  "Buone notizie, {name}: {session} ha finito.",
+]
+
+[joke]
+items = [
+  "Qual è il colmo per un elettricista? Non essere al corrente.",
+  "Che cosa fa un gallo in chiesa? Il chicchirichetto.",
+  "Perché il libro di matematica è triste? Perché ha troppi problemi.",
+  "Qual è il colmo per un giardiniere? Piantare in asso la fidanzata.",
+  "Come si chiama un boomerang che non torna indietro? Un bastone.",
+  "Quanti programmatori servono per cambiare una lampadina? Nessuno: è un problema hardware.",
+  "Perché i pesci odiano il computer? Per colpa della rete.",
+  "Qual è il colmo per un orologiaio? Non avere mai tempo.",
+  "Perché l'elefante non usa il computer? Perché ha paura del mouse.",
+  "Che cos'è un ragno sul computer? Un web designer.",
+  "Qual è il colmo per un idraulico? Non capire un tubo.",
+  "Qual è il colmo per un matematico? Avere un problema con le radici.",
+]
+
+[fact]
+items = [
+  "Lo sapevi che i polpi hanno tre cuori e il sangue blu?",
+  "Lo sapevi che su Venere un giorno dura più di un anno?",
+  "Lo sapevi che le banane sono leggermente radioattive, per via del potassio che contengono?",
+  "Lo sapevi che sulla Terra ci sono più alberi che stelle nella Via Lattea?",
+  "Lo sapevi che Cleopatra visse più vicino a noi nel tempo che alla costruzione della Grande Piramide di Giza?",
+  "Lo sapevi che i vombati fanno la cacca a forma di cubo?",
+  "Lo sapevi che l'Università di Oxford è più antica dell'Impero azteco?",
+  "Lo sapevi che un fulmine è circa cinque volte più caldo della superficie del Sole?",
+  "Lo sapevi che le lontre marine si tengono per mano mentre dormono, per non allontanarsi?",
+  "Lo sapevi che nel millenovecentoquarantasette una vera falena, incastrata in un relè dell'Harvard Mark Due, fu registrata come il primo vero caso di bug?",
+  "Lo sapevi che il DNA di una sola cellula umana, srotolato, misura circa due metri?",
+  "Lo sapevi che i fenicotteri sono rosa per i pigmenti di ciò che mangiano?",
+  "Lo sapevi che la luce del Sole impiega circa otto minuti e venti secondi per raggiungerci?",
+  "Lo sapevi che l'animale nazionale della Scozia è l'unicorno?",
+  "Lo sapevi che il cuore del gamberetto si trova nella testa?",
+]
+
+[why]
+special = [
+  "Perché no?",
+  "Non chiedere.",
+  "Perché lo dicevano i test.",
+  "Sul momento sembrava una buona idea.",
+  "Chiedi al compilatore.",
+  "È nel capitolato.",
+  "Per ragioni storiche.",
+  "Sulla mia macchina funziona.",
+  "Nessun commento.",
+  "Perché è venerdì.",
+]
+names = ["Ada", "Alan", "Grace", "Linus", "Margaret", "Dennis", "Barbara", "Edsger", "Frances", "Donald"]
+adjectives = [
+  ["assonnato", "assonnata"], ["brillante", "brillante"], ["nervoso", "nervosa"], ["pensionato", "pensionata"],
+  ["misterioso", "misteriosa"], ["inquieto", "inquieta"], ["generoso", "generosa"], ["testardo", "testarda"],
+  ["esausto", "esausta"], ["agitato", "agitata"],
+]
+# the article is part of the noun (il, lo, l', la)
+nouns = [
+  ["l'ingegnere", "m"], ["la matematica", "f"], ["lo stagista", "m"], ["la responsabile di progetto", "f"],
+  ["il criceto", "m"], ["il compilatore", "m"], ["l'architetta", "f"], ["la cliente", "f"], ["il revisore", "m"],
+  ["il robot", "m"],
+]
+verbs = ["voluto", "chiesto", "approvato", "preteso", "suggerito", "sognato", "reclamato", "imposto"]
+goals = ["impressionare", "rassicurare", "confondere", "accontentare", "stupire", "soddisfare", "divertire", "ingannare"]
+np = "{noun} {adj}"
+patterns = ["Perché {subject} l'ha {verb}.", "Per {goal} {np}.", "Me l'ha chiesto {subject}."]

@@ -1,0 +1,130 @@
+# TalkToMe language pack — Spanish (schema talktome-lang/1). Tuteo.
+# Author: Olivier Vitrac, PhD, HDR — Adservio Innovation Lab — Adservio Group — olivier.vitrac@adservio.fr
+
+schema = "talktome-lang/1"
+code = "es"
+name = "Español"
+status = "stable"
+default = true
+engine = "kokoro"
+
+[kokoro]
+lang = "es"
+
+[voices]
+f = "ef_dora"
+m = "em_alex"
+pool_f = ["ef_dora"]
+pool_m = ["em_alex", "em_santa"]
+
+[words]
+fallback_session = "esta sesión"
+discreet_session = "una sesión"
+his = { m = "su", f = "su" }
+
+[grammar]
+articles = { la = "f", una = "f", el = "m", un = "m" }
+skip = ["los", "las", "unos", "unas", "de", "del"]
+plural = ["los", "las", "unos", "unas"]
+elision = []
+contractions = [["a el ", "al "], ["de el ", "del "]]
+
+[templates.useful]
+help = ["{name}, {session} necesita tu ayuda."]
+attention = ["{name}, {session} necesita tu atención."]
+input = ["{name}, {session} espera tu respuesta."]
+landed = ["{name}, los resultados de {session} ya están listos."]
+
+[templates.fun]
+help = [
+  "Psst, {name}. {session} tiene una pregunta que solo tú puedes responder.",
+  "{name}, {session} está en una encrucijada. Tú decides.",
+  "{session} levanta la mano, {name}. Se busca ayuda.",
+  "{name}, {session} quiere una opinión humana antes de seguir.",
+  "Una cosita, {name}: {session} necesita que decidas.",
+]
+attention = [
+  "Toc, toc, {name}. {session} espera tu luz verde.",
+  "{name}, {session} espera en la puerta tu aprobación.",
+  "Perdona, {name}: {session} necesita tu firma.",
+  "{session} contiene la respiración, {name}. ¿Me das permiso?",
+  "{name}, un clic tuyo y {session} vuelve a ponerse en marcha.",
+]
+input = [
+  "Te toca, {name}. {session} te espera.",
+  "{session} es todo oídos, {name}.",
+  "{name}, {session} ya ha dicho lo suyo. Tu turno.",
+  "Cuando quieras, {name}, {session} te escucha.",
+  "{session} está mano sobre mano, {name}.",
+]
+landed = [
+  "¡Tachán! {session} ha cumplido, {name}.",
+  "{name}, resultados recién salidos de {session}, todavía calentitos.",
+  "Misión cumplida para {session}. Ven a ver, {name}.",
+  "{session} ha dejado su trabajo en tu escritorio, {name}.",
+  "Buenas noticias, {name}: {session} ha terminado.",
+]
+
+[joke]
+items = [
+  "¿Qué le dice un jaguar a otro jaguar? Jaguar you.",
+  "¿Cuál es el café más peligroso del mundo? El ex-preso.",
+  "¿Qué hace una abeja en el gimnasio? ¡Zum-ba!",
+  "¿Qué le dice un pez a otro pez? Nada.",
+  "¿Por qué está triste el libro de matemáticas? Porque tiene demasiados problemas.",
+  "¿Cuántos programadores hacen falta para cambiar una bombilla? Ninguno: es un problema de hardware.",
+  "Había una vez un perro llamado Pegamento. Se cayó y se pegó.",
+  "¿Qué le dice el uno al diez? Para ser como yo, tienes que ser sincero.",
+  "¿Qué le dice una iguana a su hermana gemela? Somos iguanitas.",
+  "¿Por qué los pájaros no usan Facebook? Porque ya tienen Twitter.",
+  "¿Cuál es el colmo de un electricista? No estar al corriente.",
+  "¿Qué le dice una impresora a otra? ¿Esa hoja es tuya o es impresión mía?",
+]
+
+[fact]
+items = [
+  "¿Sabías que los pulpos tienen tres corazones y la sangre azul?",
+  "¿Sabías que en Venus un día dura más que un año?",
+  "¿Sabías que los plátanos son ligeramente radiactivos, por el potasio que contienen?",
+  "¿Sabías que en la Tierra hay más árboles que estrellas en la Vía Láctea?",
+  "¿Sabías que Cleopatra vivió más cerca de nosotros en el tiempo que de la construcción de la Gran Pirámide de Guiza?",
+  "¿Sabías que los wombats hacen cacas en forma de cubo?",
+  "¿Sabías que la Universidad de Oxford es más antigua que el Imperio azteca?",
+  "¿Sabías que un rayo es unas cinco veces más caliente que la superficie del Sol?",
+  "¿Sabías que las nutrias marinas se dan la mano al dormir para no separarse a la deriva?",
+  "¿Sabías que en mil novecientos cuarenta y siete una polilla de verdad, atrapada en un relé del Harvard Mark Dos, quedó registrada como el primer caso real de bug?",
+  "¿Sabías que el ADN de una sola célula humana, estirado, mide unos dos metros?",
+  "¿Sabías que los flamencos son rosas por los pigmentos de lo que comen?",
+  "¿Sabías que la luz del Sol tarda unos ocho minutos y veinte segundos en llegarnos?",
+  "¿Sabías que el animal nacional de Escocia es el unicornio?",
+  "¿Sabías que el corazón de la gamba está en su cabeza?",
+]
+
+[why]
+special = [
+  "¿Por qué no?",
+  "No preguntes.",
+  "Porque lo dijeron los tests.",
+  "En su momento pareció buena idea.",
+  "Pregúntale al compilador.",
+  "Está en el pliego de condiciones.",
+  "Por razones históricas.",
+  "En mi máquina funciona.",
+  "Sin comentarios.",
+  "Porque es viernes.",
+]
+names = ["Ada", "Alan", "Grace", "Linus", "Margaret", "Dennis", "Barbara", "Edsger", "Frances", "Donald"]
+adjectives = [
+  ["dormido", "dormida"], ["brillante", "brillante"], ["nervioso", "nerviosa"], ["jubilado", "jubilada"],
+  ["misterioso", "misteriosa"], ["inquieto", "inquieta"], ["generoso", "generosa"], ["testarudo", "testaruda"],
+  ["agotado", "agotada"], ["acelerado", "acelerada"],
+]
+nouns = [
+  ["ingeniero", "m"], ["matemática", "f"], ["becario", "m"], ["jefa de proyecto", "f"], ["hámster", "m"],
+  ["compilador", "m"], ["arquitecta", "f"], ["clienta", "f"], ["auditor", "m"], ["robot", "m"],
+]
+verbs = ["quiso", "pidió", "aprobó", "exigió", "sugirió", "soñó", "reclamó", "impuso"]
+goals = ["impresionar", "tranquilizar", "confundir", "contentar", "sorprender", "satisfacer", "divertir", "engañar"]
+articles = { m = "el", f = "la" }
+np = "{art} {noun} {adj}"
+patterns = ["Porque {subject} lo {verb}.", "Para {goal} a {np}.", "Me lo pidió {subject}."]

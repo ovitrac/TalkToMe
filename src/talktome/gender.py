@@ -34,7 +34,7 @@ MALE_NAMES = frozenset(
 ARTICLES = {"la": "f", "une": "f", "le": "m", "un": "m"}
 SKIPPED = frozenset({"the", "a", "an", "les", "l", "des", "du", "de"})
 PLURAL = frozenset({"les", "des"})
-FEMININE_ENDINGS = ("tion", "sion", "xion", "aison")
+FEMININE_ENDINGS = ("tion", "sion", "xion", "aison", "cion", "dad", "dade", "cao")
 MASCULINE_ENDINGS = ("age", "isme", "ege", "eme", "scope", "phone")
 VOWELS = set("aeiouy")
 
@@ -47,14 +47,29 @@ def _hashed(name: str) -> str:
     return GENDERS[zlib.crc32(name.strip().lower().encode("utf-8")) % 2]
 
 
-def guess(name: str) -> tuple[str, str]:
+def _cues(lang: str) -> tuple[dict[str, str], frozenset[str], frozenset[str]]:
+    """Articles, skipped words and plural articles: French and English always, plus the language's own."""
+    articles, skipped, plural = dict(ARTICLES), set(SKIPPED), set(PLURAL)
+    if lang not in ("en", "fr"):
+        from . import langs
+
+        g = langs.grammar(lang)
+        articles.update({_fold(k): v for k, v in g.get("articles", {}).items()})
+        skipped |= {_fold(w) for w in g.get("skip", [])}
+        plural |= {_fold(w) for w in g.get("plural", [])}
+        skipped -= set(articles)  # pt "a" is an article, not the English "a"
+    return articles, frozenset(skipped), frozenset(plural)
+
+
+def guess(name: str, lang: str = "en") -> tuple[str, str]:
     """(gender, reason) for a spoken session name; deterministic."""
+    articles, skipped, plurals = _cues(lang)
     words = re.findall(r"[^\W\d_]+", name)
-    if words and _fold(words[0]) in ARTICLES:
-        return ARTICLES[_fold(words[0])], f"article {words[0]}"
+    if words and _fold(words[0]) in articles:
+        return articles[_fold(words[0])], f"article {words[0]}"
     plural = False
-    while words and _fold(words[0]) in SKIPPED and len(words) > 1:
-        plural = plural or _fold(words[0]) in PLURAL
+    while words and _fold(words[0]) in skipped and len(words) > 1:
+        plural = plural or _fold(words[0]) in plurals
         words = words[1:]
     if not words:
         return _hashed(name), "improvised (no word)"

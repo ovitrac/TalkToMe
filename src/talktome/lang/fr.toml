@@ -1,27 +1,73 @@
-# TalkToMe — jokes, surprising facts and `why` (design §7.1) — schema talktome-fun/1
+# TalkToMe language pack — French (schema talktome-lang/1). Tutoiement; one Kokoro voice for every session.
 # Author: Olivier Vitrac, PhD, HDR — Adservio Innovation Lab — Adservio Group — olivier.vitrac@adservio.fr
-#
-# Written to be heard: no joke relies on reading digits or symbols aloud. Facts are well established ones only.
-# `why` answers in the spirit of MATLAB's `why`: a random, grammatical, useless answer (own word lists).
 
-schema = "talktome-fun/1"
+schema = "talktome-lang/1"
+code = "fr"
+name = "Français"
+status = "stable"
+default = true
+engine = "kokoro"
+
+[kokoro]
+lang = "fr-fr"
+
+[voices]
+f = "ff_siwis"
+m = "ff_siwis"
+pool_f = ["ff_siwis"]
+pool_m = []
+
+[words]
+fallback_session = "cette session"
+discreet_session = "une session"
+his = { m = "son", f = "son" }
+
+[grammar]
+articles = { la = "f", une = "f", le = "m", un = "m" }
+skip = ["les", "l", "des", "du", "de"]
+plural = ["les", "des"]
+# applied before a vowel (le/la → l', de → d', que → qu')
+elision = [["le", "l'"], ["la", "l'"], ["de", "d'"], ["que", "qu'"]]
+contractions = []
+
+[templates.useful]
+help = ["{name}, {session} a besoin de ton aide."]
+attention = ["{name}, {session} a besoin de ton attention."]
+input = ["{name}, {session} attend ta réponse."]
+landed = ["{name}, les résultats de {session} sont déposés."]
+
+[templates.fun]
+help = [
+  "Psst, {name} ! {session} a une question pour toi.",
+  "{name}, {session} hésite à la croisée des chemins. À toi de trancher.",
+  "{session} lève la main, {name}. On a besoin de toi.",
+  "{name}, {session} aimerait ton avis avant d'aller plus loin.",
+  "Une petite décision, {name} : {session} compte sur toi.",
+]
+attention = [
+  "Toc toc, {name} ! {session} attend ton feu vert.",
+  "{name}, {session} patiente à la porte. Tu autorises ?",
+  "Pardon de te déranger, {name} : {session} a besoin de ta signature.",
+  "{session} retient son souffle, {name}. Une autorisation, s'il te plaît ?",
+  "{name}, un clic de ta part et {session} repart.",
+]
+input = [
+  "À toi de jouer, {name}. {session} t'attend.",
+  "{session} est tout ouïe, {name}.",
+  "{name}, {session} a fini. La parole est à toi.",
+  "Quand tu veux, {name}, {session} t'écoute.",
+  "{session} se tourne les pouces, {name}.",
+]
+landed = [
+  "Et voilà ! {session} a livré, {name}.",
+  "{name}, les résultats de {session} sont servis, encore chauds.",
+  "Mission accomplie pour {session}. Viens voir, {name} !",
+  "{session} a déposé son travail sur ton bureau, {name}.",
+  "Bonne nouvelle, {name} : {session} a terminé.",
+]
 
 [joke]
-en = [
-  "Why do programmers prefer dark mode? Because light attracts bugs.",
-  "How many programmers does it take to change a light bulb? None. That's a hardware problem.",
-  "Why don't scientists trust atoms? Because they make up everything.",
-  "I told my wife she was drawing her eyebrows too high. She looked surprised.",
-  "What do you call a fake noodle? An impasta.",
-  "Why did the scarecrow win an award? Because he was outstanding in his field.",
-  "An S Q L query walks into a bar, goes up to two tables and asks: may I join you?",
-  "Why do Java developers wear glasses? Because they don't C sharp.",
-  "I would tell you a joke about U D P, but you might not get it.",
-  "Why was the math book sad? It had too many problems.",
-  "Why did the developer go broke? Because he used up all his cache.",
-  "I'm reading a book about anti-gravity. It's impossible to put down.",
-]
-fr = [
+items = [
   "C'est l'histoire d'un pingouin qui respirait par les fesses. Un jour, il s'est assis. Et il est mort.",
   "Pourquoi les plongeurs plongent-ils toujours en arrière, et jamais en avant ? Parce que sinon, ils tombent dans le bateau.",
   "Que fait une fraise sur un cheval ? Tagada, tagada !",
@@ -37,24 +83,7 @@ fr = [
 ]
 
 [fact]
-en = [
-  "Did you know? Octopuses have three hearts and blue blood.",
-  "Did you know? A day on Venus lasts longer than a year on Venus.",
-  "Did you know? Bananas are slightly radioactive, because of the potassium they contain.",
-  "Did you know? There are more trees on Earth than stars in the Milky Way.",
-  "Did you know? Cleopatra lived closer in time to us than to the building of the Great Pyramid of Giza.",
-  "Did you know? Wombats produce cube-shaped droppings.",
-  "Did you know? The University of Oxford is older than the Aztec Empire.",
-  "Did you know? A bolt of lightning is about five times hotter than the surface of the Sun.",
-  "Did you know? Sea otters hold hands while they sleep, so they don't drift apart.",
-  "Did you know? In nineteen forty-seven, a real moth stuck in a relay of the Harvard Mark Two was logged as the first actual case of a bug being found.",
-  "Did you know? Stretched out, the DNA in a single human cell is about two metres long.",
-  "Did you know? Flamingos are pink because of the pigments in what they eat.",
-  "Did you know? Light from the Sun takes about eight minutes and twenty seconds to reach us.",
-  "Did you know? The national animal of Scotland is the unicorn.",
-  "Did you know? A shrimp's heart is in its head.",
-]
-fr = [
+items = [
   "Tu savais ? Les pieuvres ont trois cœurs et le sang bleu.",
   "Tu savais ? Sur Vénus, une journée dure plus longtemps qu'une année.",
   "Tu savais ? Les bananes sont légèrement radioactives, à cause du potassium qu'elles contiennent.",
@@ -72,26 +101,7 @@ fr = [
   "Tu savais ? Le cœur de la crevette se trouve dans sa tête.",
 ]
 
-[why.en]
-special = [
-  "Why not?",
-  "Don't ask.",
-  "Because the tests said so.",
-  "It seemed like a good idea at the time.",
-  "Ask the compiler.",
-  "It's in the specification.",
-  "Legacy reasons.",
-  "It works on my machine.",
-  "No comment.",
-  "Because it is Friday.",
-]
-names = ["Ada", "Alan", "Grace", "Linus", "Margaret", "Dennis", "Barbara", "Edsger", "Frances", "Donald"]
-adjectives = ["tall", "sleepy", "brilliant", "nervous", "retired", "caffeinated", "mysterious", "anxious", "generous", "stubborn"]
-nouns = ["engineer", "mathematician", "intern", "project manager", "hamster", "compiler", "architect", "customer", "auditor", "robot"]
-verbs = ["wanted", "asked for", "approved", "insisted on", "suggested", "demanded", "dreamed of", "refactored"]
-goals = ["please", "impress", "confuse", "reassure", "fool", "satisfy", "outsmart", "delight"]
-
-[why.fr]
+[why]
 special = [
   "Pourquoi pas ?",
   "Ne demande pas.",
@@ -116,6 +126,8 @@ nouns = [
   ["ingénieur", "m"], ["mathématicienne", "f"], ["stagiaire", "m"], ["cheffe de projet", "f"], ["hamster", "m"],
   ["compilateur", "m"], ["architecte", "f"], ["cliente", "f"], ["auditeur", "m"], ["robot", "m"],
 ]
-# past participles: "Parce que X l'a <voulu>."
 verbs = ["voulu", "demandé", "approuvé", "exigé", "suggéré", "rêvé", "réclamé", "imposé"]
 goals = ["impressionner", "rassurer", "embrouiller", "contenter", "épater", "satisfaire", "amuser", "berner"]
+articles = { m = "le", f = "la" }
+np = "{art} {noun} {adj}"
+patterns = ["Parce que {subject} l'a {verb}.", "Pour {goal} {np}.", "{subject} me l'a demandé."]

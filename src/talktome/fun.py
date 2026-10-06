@@ -2,7 +2,7 @@
 
 `pick()` deals jokes and facts from a shuffled deck: none repeats before all have been told.
 `why()` answers in the spirit of MATLAB's `why`: a random, grammatical, useless answer; the same seed gives
-the same answer.
+the same answer. The content and the sentence patterns come from the language packs.
 
 Author: Olivier Vitrac, PhD, HDR — Adservio Innovation Lab — Adservio Group — olivier.vitrac@adservio.fr
 License: MIT
@@ -12,28 +12,16 @@ from __future__ import annotations
 
 import json
 import random
-import tomllib
-from functools import lru_cache
-from importlib.resources import files
 from typing import Any
 
-from . import catalog, paths, state
+from . import langs, paths, state
 
-SCHEMA = "talktome-fun/1"
 KINDS = ("joke", "fact")
 SPECIAL_SHARE = 0.2
 
 
-@lru_cache(maxsize=1)
-def data() -> dict[str, Any]:
-    d = tomllib.loads(files("talktome").joinpath("fun.toml").read_text(encoding="utf-8"))
-    if d.get("schema") != SCHEMA:
-        raise ValueError(f"fun schema must be {SCHEMA!r}")
-    return d
-
-
 def items(kind: str, lang: str) -> list[str]:
-    return list(data()[kind][lang])
+    return list(langs.pack(lang)[kind]["items"])
 
 
 def next_index(remaining: list[int], n: int, rng: random.Random) -> tuple[int, list[int]]:
@@ -59,37 +47,29 @@ def pick(kind: str, lang: str, rng: random.Random) -> str:
     return pool[idx]
 
 
-def _np_fr(w: dict[str, Any], rng: random.Random) -> str:
-    noun, g = rng.choice(w["nouns"])
-    adj = rng.choice(w["adjectives"])[0 if g == "m" else 1]
-    return f"{'la' if g == 'f' else 'le'} {noun} {adj}"
+def _noun_phrase(w: dict[str, Any], rng: random.Random) -> str:
+    """The pack's `np`: noun ([noun, gender] or plain), agreeing adjective ([m, f] or plain), article."""
+    noun = rng.choice(w["nouns"])
+    noun, g = (noun[0], noun[1]) if isinstance(noun, list) else (noun, "m")
+    adj = rng.choice(w["adjectives"])
+    adj = adj[0 if g == "m" else 1] if isinstance(adj, list) else adj
+    art = w.get("articles", {}).get(g, "")
+    return str(w["np"]).replace("{art}", art).replace("{noun}", noun).replace("{adj}", adj).strip()
 
 
 def why(lang: str, rng: random.Random) -> str:
-    """A random answer to "why?"."""
-    w = data()["why"][lang]
-    if rng.random() < SPECIAL_SHARE:
+    """A random answer to "why?"; packs without patterns only have their special answers."""
+    w = langs.pack(lang)["why"]
+    patterns = w.get("patterns", [])
+    if not patterns or rng.random() < SPECIAL_SHARE:
         return str(rng.choice(w["special"]))
-    form = rng.randrange(3)
-    if lang == "fr":
-        subject = rng.choice(w["names"]) if rng.random() < 0.5 else _np_fr(w, rng)
-        if form == 0:
-            text = f"Parce que {subject} l'a {rng.choice(w['verbs'])}."
-        elif form == 1:
-            text = f"Pour {rng.choice(w['goals'])} {_np_fr(w, rng)}."
-        else:
-            text = f"{subject} me l'a demandé."
-        text = catalog.elide_fr(text)
-    else:
-
-        def np() -> str:
-            return f"the {rng.choice(w['adjectives'])} {rng.choice(w['nouns'])}"
-
-        subject = rng.choice(w["names"]) if rng.random() < 0.5 else np()
-        if form == 0:
-            text = f"Because {subject} {rng.choice(w['verbs'])} it."
-        elif form == 1:
-            text = f"To {rng.choice(w['goals'])} {np()}."
-        else:
-            text = f"{subject} told me to."
+    pattern = str(rng.choice(patterns))
+    subject = rng.choice(w["names"]) if rng.random() < 0.5 else _noun_phrase(w, rng)
+    text = (
+        pattern.replace("{subject}", subject)
+        .replace("{verb}", rng.choice(w["verbs"]))
+        .replace("{goal}", rng.choice(w["goals"]))
+        .replace("{np}", _noun_phrase(w, rng))
+    )
+    text = langs.polish(lang, text)
     return text[0].upper() + text[1:]

@@ -1,0 +1,80 @@
+# TalkToMe language pack — Mandarin Chinese (schema talktome-lang/1). Experimental: pronunciation not reviewed.
+# Author: Olivier Vitrac, PhD, HDR — Adservio Innovation Lab — Adservio Group — olivier.vitrac@adservio.fr
+
+schema = "talktome-lang/1"
+code = "zh"
+name = "中文 (Mandarin)"
+status = "experimental"
+default = true
+engine = "kokoro"
+
+[kokoro]
+lang = "cmn"
+
+[voices]
+f = "zf_xiaoxiao"
+m = "zm_yunxi"
+pool_f = ["zf_xiaoxiao", "zf_xiaobei", "zf_xiaoni", "zf_xiaoyi"]
+pool_m = ["zm_yunxi", "zm_yunjian", "zm_yunxia", "zm_yunyang"]
+
+[words]
+fallback_session = "这个会话"
+discreet_session = "一个会话"
+his = { m = "他的", f = "她的" }
+
+[grammar]
+articles = {}
+skip = []
+plural = []
+elision = []
+contractions = []
+
+[templates.useful]
+help = ["{name}，{session}需要你的帮助。"]
+attention = ["{name}，{session}需要你的关注。"]
+input = ["{name}，{session}在等你的回复。"]
+landed = ["{name}，{session}的结果出来了。"]
+
+[templates.fun]
+help = [
+  "{name}，{session}有个问题只有你能回答。",
+  "{session}举手了，{name}，需要帮忙。",
+]
+attention = [
+  "咚咚，{name}！{session}在等你的许可。",
+  "{name}，{session}需要你签个字。",
+]
+input = [
+  "{name}，轮到你了，{session}在等你。",
+  "{session}洗耳恭听，{name}。",
+]
+landed = [
+  "{name}，好消息：{session}完成了。",
+  "{session}把成果放到你桌上了，{name}。",
+]
+
+[joke]
+items = [
+  "为什么程序员喜欢黑色主题？因为光会招来虫子。",
+  "换一个灯泡需要几个程序员？一个都不用，那是硬件问题。",
+  "电脑为什么去看医生？因为它中了病毒。",
+]
+
+[fact]
+items = [
+  "你知道吗？章鱼有三颗心脏，血液是蓝色的。",
+  "你知道吗？在金星上，一天比一年还长。",
+  "你知道吗？地球上的树比银河系里的星星还多。",
+  "你知道吗？闪电的温度大约是太阳表面的五倍。",
+  "你知道吗？苏格兰的国兽是独角兽。",
+]
+
+[why]
+special = [
+  "为什么不呢？",
+  "别问了。",
+  "因为测试是这么说的。",
+  "在我的机器上是好的。",
+  "无可奉告。",
+]
+patterns = []

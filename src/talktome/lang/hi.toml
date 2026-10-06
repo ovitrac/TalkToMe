@@ -1,0 +1,80 @@
+# TalkToMe language pack — Hindi (schema talktome-lang/1). Experimental: pronunciation not reviewed.
+# Author: Olivier Vitrac, PhD, HDR — Adservio Innovation Lab — Adservio Group — olivier.vitrac@adservio.fr
+
+schema = "talktome-lang/1"
+code = "hi"
+name = "हिन्दी (Hindi)"
+status = "experimental"
+default = true
+engine = "kokoro"
+
+[kokoro]
+lang = "hi"
+
+[voices]
+f = "hf_alpha"
+m = "hm_omega"
+pool_f = ["hf_alpha", "hf_beta"]
+pool_m = ["hm_omega", "hm_psi"]
+
+[words]
+fallback_session = "यह सत्र"
+discreet_session = "एक सत्र"
+his = { m = "उसका", f = "उसका" }
+
+[grammar]
+articles = {}
+skip = []
+plural = []
+elision = []
+contractions = []
+
+[templates.useful]
+help = ["{name}, {session} को आपकी मदद चाहिए।"]
+attention = ["{name}, {session} को आपका ध्यान चाहिए।"]
+input = ["{name}, {session} को आपके जवाब का इंतज़ार है।"]
+landed = ["{name}, {session} के नतीजे आ गए हैं।"]
+
+[templates.fun]
+help = [
+  "सुनिए {name}, {session} के पास आपके लिए एक सवाल है।",
+  "{name}, आगे बढ़ने से पहले {session} को आपकी राय चाहिए।",
+]
+attention = [
+  "दस्तक, {name}! {session} को आपकी हरी झंडी चाहिए।",
+  "{name}, {session} को आपकी अनुमति चाहिए।",
+]
+input = [
+  "{name}, अब आपकी बारी है। {session} को आपका इंतज़ार है।",
+  "{session} को आपके जवाब का इंतज़ार है, {name}।",
+]
+landed = [
+  "{name}, अच्छी ख़बर: {session} का काम पूरा हो गया।",
+  "{session} के नतीजे तैयार हैं, {name}।",
+]
+
+[joke]
+items = [
+  "कंप्यूटर डॉक्टर के पास क्यों गया? क्योंकि उसे वायरस हो गया था।",
+  "एक बल्ब बदलने के लिए कितने प्रोग्रामर चाहिए? एक भी नहीं, यह हार्डवेयर की समस्या है।",
+  "गणित की किताब उदास क्यों थी? क्योंकि उसमें बहुत सारी समस्याएँ थीं।",
+]
+
+[fact]
+items = [
+  "क्या आप जानते हैं? ऑक्टोपस के तीन दिल होते हैं और उसका खून नीला होता है।",
+  "क्या आप जानते हैं? शुक्र ग्रह पर एक दिन, वहाँ के एक साल से भी लंबा होता है।",
+  "क्या आप जानते हैं? धरती पर आकाशगंगा के तारों से ज़्यादा पेड़ हैं।",
+  "क्या आप जानते हैं? आकाशीय बिजली सूरज की सतह से लगभग पाँच गुना ज़्यादा गर्म होती है।",
+  "क्या आप जानते हैं? स्कॉटलैंड का राष्ट्रीय पशु यूनिकॉर्न है।",
+]
+
+[why]
+special = [
+  "क्यों नहीं?",
+  "मत पूछिए।",
+  "क्योंकि टेस्ट ने ऐसा कहा।",
+  "मेरी मशीन पर तो चलता है।",
+  "कोई टिप्पणी नहीं।",
+]
+patterns = []
