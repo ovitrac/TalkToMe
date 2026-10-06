@@ -9,7 +9,6 @@ from __future__ import annotations
 import hashlib
 import json
 import os
-import urllib.request
 from pathlib import Path
 from typing import Any
 
@@ -84,6 +83,8 @@ def fingerprint(models_dir: Path) -> str:
 
 def fetch(dest: Path) -> list[str]:
     """Download the model files into `dest` and verify them (explicit network use: `setup --fetch`)."""
+    import urllib.request  # network only here; kept out of the hook's import path
+
     dest.mkdir(parents=True, exist_ok=True)
     done = []
     for name, digest in FILES.items():

@@ -20,14 +20,15 @@ LANGUAGES = ("en", "fr")
 REGISTERS = ("useful", "fun")
 CLASSES = ("help", "attention", "input", "landed")
 PLAYERS = ("auto", "pw-play", "paplay", "aplay", "ffplay", "mpv")
-FREE_KEYS = ("templates", "respell")
+FREE_KEYS = ("templates", "respell", "genders")
+GENDERS = ("f", "m")
 
 DEFAULTS: dict[str, Any] = {
     "schema": SCHEMA,
     "name": "",
     "language": "en",
     "register": "useful",
-    "voices": {"en": "bm_george", "fr": "ff_siwis"},
+    "voices": {"en": {"f": "bf_emma", "m": "bm_george"}, "fr": {"f": "ff_siwis", "m": "ff_siwis"}},
     "speed": {"en": 1.0, "fr": 1.0},
     "volume": 1.0,
     "earcons": True,
@@ -43,6 +44,7 @@ DEFAULTS: dict[str, Any] = {
     },
     "templates": {},
     "respell": {},
+    "genders": {},
 }
 
 _VOICE = re.compile(r"^[a-z]{2}_[a-z0-9]+$")
@@ -132,13 +134,18 @@ def validate(cfg: dict[str, Any]) -> list[str]:
         e.append(f"register must be one of {REGISTERS}")
     voices = cfg.get("voices")
     if not isinstance(voices, dict) or set(voices) != set(LANGUAGES):
-        e.append(f"voices must map exactly {LANGUAGES} to a voice")
+        e.append(f"voices must map exactly {LANGUAGES} to a voice, or to one voice per gender {GENDERS}")
     else:
         for lang, spec in voices.items():
-            try:
-                parse_voice(spec)
-            except (ValueError, AttributeError) as x:
-                e.append(f"voices.{lang}: {x}")
+            specs = spec if isinstance(spec, dict) else {g: spec for g in GENDERS}
+            if set(specs) != set(GENDERS):
+                e.append(f"voices.{lang}: one voice, or one per gender {GENDERS}")
+                continue
+            for g, v in specs.items():
+                try:
+                    parse_voice(v)
+                except (ValueError, AttributeError) as x:
+                    e.append(f"voices.{lang}.{g}: {x}")
     speed: Any = cfg.get("speed")
     speeds: dict[str, Any] = speed if isinstance(speed, dict) else {lang: speed for lang in LANGUAGES}
     if set(speeds) != set(LANGUAGES) or not all(_is_num(v) and 0.5 <= v <= 2.0 for v in speeds.values()):
@@ -183,6 +190,11 @@ def validate(cfg: dict[str, Any]) -> list[str]:
         if not isinstance(fun["voice_per_session"], bool):
             e.append("fun.voice_per_session must be true or false")
     e.extend(catalog.validate_overrides(cfg.get("templates")))
+    genders = cfg.get("genders")
+    if not isinstance(genders, dict) or not all(
+        isinstance(k, str) and v in GENDERS for k, v in genders.items()
+    ):
+        e.append(f"genders must map session names to one of {GENDERS}")
     respell = cfg.get("respell")
     if not isinstance(respell, dict) or not all(
         isinstance(k, str) and isinstance(v, str) and k for k, v in respell.items()
@@ -222,6 +234,8 @@ def set_value(cfg: dict[str, Any], dotted: str, raw: str) -> dict[str, Any]:
     out = copy.deepcopy(cfg)
     if keys[0] == "speed" and len(keys) == 2 and not isinstance(out["speed"], dict):
         out["speed"] = {lang: out["speed"] for lang in LANGUAGES}  # one number for all → one per language
+    if keys[0] == "voices" and len(keys) == 3 and isinstance(out["voices"].get(keys[1]), str):
+        out["voices"][keys[1]] = {g: out["voices"][keys[1]] for g in GENDERS}  # one voice → one per gender
     node = out
     for k in keys[:-1]:
         node = node.setdefault(k, {})
@@ -232,6 +246,12 @@ def set_value(cfg: dict[str, Any], dotted: str, raw: str) -> dict[str, Any]:
     if errors:
         raise ConfigError("; ".join(errors))
     return out
+
+
+def voice_for(cfg: dict[str, Any], lang: str, gender: str) -> str:
+    """Voice for `lang` and `gender`: `voices.<lang>` is one voice for both genders or one per gender."""
+    spec = cfg["voices"][lang]
+    return str(spec[gender] if isinstance(spec, dict) else spec)
 
 
 def speed_for(cfg: dict[str, Any], lang: str) -> float:

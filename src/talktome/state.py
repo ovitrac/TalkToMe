@@ -24,6 +24,7 @@ class SessionState:
     last_spoken: float | None = None
     last_say: float | None = None
     name: str | None = None
+    gender: str | None = None
     variants: dict[str, int] = field(default_factory=dict)
 
 

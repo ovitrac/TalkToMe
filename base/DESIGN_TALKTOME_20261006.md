@@ -169,6 +169,27 @@ of the levers that do act:
 | Mood levers | speed and earcon only (pitch 0) | full preset |
 | Voice | the configured voice per language | one voice per session, picked from a pool by a stable hash of the session name (EN); in French, the single voice `ff_siwis` with a per-session pitch offset in {−2…+2} st |
 
+### 5.1 Gender of a session (D-0013, D-0014)
+
+Sessions are people, not objects: "he" or "she", never "it" (the lead: *"I prefer to interact with a his/her
+than with an it = cold object = dead"*). The gender of a session comes, in order, from: the gender set for the
+session (`talktome name … --gender`, `talktome gender f|m`), the user's `genders` map, then an improvised guess
+from the spoken name (`gender.py`), as a native speaker would make it:
+
+| Cue | Example | Gender |
+|---|---|---|
+| leading French article | *la chaise*, *une table* / *le moteur*, *un pipeline* | f / m |
+| known given or mythological name | Ariadne, Rosetta, Agnès / Hermes, Étienne | f / m |
+| French noun ending | *-tion*, *-sion*, *-aison* / *-age*, *-isme*, *-ème* | f / m |
+| final letter | *-a*, *-e* / *-o*, *-u*, consonant | f / m |
+| none (acronym, *-i*, *-y*, digits) | ETL2, API, Origami | stable hash |
+
+The improvisation is deterministic: a name keeps the gender it was first given. The gender selects the English
+voice in both registers (`voices.en.f` / `voices.en.m` in *useful*; the pool voices of that gender in *fun*,
+told apart by the second letter of the Kokoro name: `bf_`, `af_` / `bm_`, `am_`) and fills `{his}` (*his* /
+*her*). French keeps its single voice `ff_siwis` for every session (D-0014); its templates use no gendered
+agreement on the session.
+
 ## 6. Configuration
 
 One file, `~/.config/talktome/config.json` (schema `talktome-config/1`), written by `talktome setup` and
@@ -180,7 +201,7 @@ One file, `~/.config/talktome/config.json` (schema `talktome-config/1`), written
   "name": "",
   "language": "en",
   "register": "useful",
-  "voices": { "en": "bm_george", "fr": "ff_siwis" },
+  "voices": { "en": { "f": "bf_emma", "m": "bm_george" }, "fr": { "f": "ff_siwis", "m": "ff_siwis" } },
   "speed": { "en": 1.0, "fr": 1.0 },
   "volume": 1.0,
   "earcons": true,
@@ -192,7 +213,8 @@ One file, `~/.config/talktome/config.json` (schema `talktome-config/1`), written
   "moods": { "help": "warm", "attention": "firm", "input": "calm", "landed": "cheerful" },
   "fun": { "voice_pool": ["bm_george", "bf_emma", "am_michael", "af_heart", "bm_lewis", "bf_isabella"], "voice_per_session": true },
   "templates": {},
-  "respell": {}
+  "respell": {},
+  "genders": {}
 }
 ```
 
@@ -206,7 +228,8 @@ the lock; `log.jsonl`) and audio in `~/.cache/talktome/`.
 |---|---|
 | `talktome hook` | hook entry point (stdin JSON; silent; exit 0) |
 | `talktome say [--mood M] [--class C] TEXT` | deliberate message (skill or user) |
-| `talktome name TEXT` | name the current session |
+| `talktome name TEXT [--gender f\|m]` | name the current session (gender improvised if omitted) |
+| `talktome gender [f\|m\|auto]` | show or set the current session's gender |
 | `talktome set KEY VALUE` / `talktome show` | settings (`set language fr`, `set register fun`, `set voices.en bf_emma`, `set name Olivier`) |
 | `talktome voices [--lang en\|fr]` | list voices |
 | `talktome mute [MINUTES]` / `talktome unmute` | silence |

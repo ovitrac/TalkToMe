@@ -13,7 +13,7 @@ from dataclasses import asdict, dataclass, replace
 from pathlib import PurePath
 from typing import Any
 
-from . import catalog, config, moods
+from . import catalog, config, gender, moods
 from .state import SessionState
 
 # Notification types and tools that block Claude until the user acts.
@@ -52,6 +52,7 @@ class Utterance:
     speed: float
     pitch_st: float
     earcon: bool
+    gender: str = ""
 
     def to_json(self) -> str:
         return json.dumps(asdict(self), ensure_ascii=False)
@@ -88,15 +89,27 @@ def session_name(event: Event, st: SessionState, lang: str) -> str:
     return FALLBACK_SESSION[lang]
 
 
-def _voice_and_pitch(cfg: dict[str, Any], lang: str, session: str, mood_pitch: float) -> tuple[str, float]:
-    voice: str = cfg["voices"][lang]
+def session_gender(st: SessionState, cfg: dict[str, Any], session: str) -> str:
+    """Gender set for the session, else the user's map, else improvised from the name."""
+    if st.gender in config.GENDERS:
+        return st.gender
+    mapped = cfg["genders"].get(session)
+    return mapped if mapped in config.GENDERS else gender.guess(session)[0]
+
+
+def _voice_and_pitch(
+    cfg: dict[str, Any], lang: str, session: str, sex: str, mood_pitch: float
+) -> tuple[str, float]:
+    voice = config.voice_for(cfg, lang, sex)
     if cfg["register"] != "fun":
         return voice, 0.0
     pitch = mood_pitch
     if cfg["fun"]["voice_per_session"]:
         h = zlib.crc32(session.encode("utf-8"))
-        if lang == "en":
-            pool = cfg["fun"]["voice_pool"]
+        if (
+            lang == "en"
+        ):  # a voice of the session's gender: the second letter of a Kokoro name (bf_, bm_, af_, am_)
+            pool = [v for v in cfg["fun"]["voice_pool"] if v[1] == sex] or [voice]
             voice = pool[h % len(pool)]
         else:  # one French voice: sessions differ by pitch
             pitch += FR_PITCH_OFFSETS[h % len(FR_PITCH_OFFSETS)]
@@ -109,10 +122,11 @@ def build(
     """Compose the utterance for class `cls`; returns it with the rotation state to keep."""
     lang, register = cfg["language"], cfg["register"]
     session = session_name(event, st, lang)
+    sex = session_gender(st, cfg, session)
     mood = moods.get(event.mood or cfg["moods"].get(cls, "neutral"))
     variants = st.variants
     if event.kind == "say":
-        text = catalog.substitute(event.text, cfg["name"], session)
+        text = catalog.substitute(event.text, cfg["name"], session, sex)
     else:
         pool = catalog.templates(cfg, register, lang, cls)
         idx = 0
@@ -120,8 +134,8 @@ def build(
             last = st.variants.get(cls)
             idx = rng.choice([i for i in range(len(pool)) if i != last])
         variants = {**st.variants, cls: idx}
-        text = catalog.substitute(pool[idx], cfg["name"], session)
-    voice, pitch = _voice_and_pitch(cfg, lang, session, mood.pitch_st)
+        text = catalog.substitute(pool[idx], cfg["name"], session, sex)
+    voice, pitch = _voice_and_pitch(cfg, lang, session, sex, mood.pitch_st)
     utt = Utterance(
         session_id=event.session_id,
         session=session,
@@ -135,6 +149,7 @@ def build(
         speed=round(config.speed_for(cfg, lang) * mood.speed, 4),
         pitch_st=pitch,
         earcon=bool(cfg["earcons"]),
+        gender=sex,
     )
     return utt, replace(st, variants=variants)
 

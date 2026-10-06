@@ -48,7 +48,10 @@ help, needs your attention, or has finished a long piece of work, and tells you 
 | a session waits for you (reminder, at most every 5 min) | "Ada, alpha needs your input." |
 | a turn of 60 s or more has finished | "Ada, the results of alpha landed." |
 
-The *fun* register rotates natural variations; French uses *tu*. Each message opens with a short chime that
+Each session is a *he* or a *she*, never an *it*: the gender is improvised from the session's name, as a
+native speaker would guess it (Hermes, *le moteur* → he; Ariadne, *la chaise* → she), and picks a male or
+female English voice; `talktome gender f|m` overrides it. The *fun* register rotates natural variations; French
+uses *tu* and one voice. Each message opens with a short chime that
 carries its mood. Sessions speak one at a time.
 
 ## Tune it
@@ -60,6 +63,7 @@ talktome set register fun              # or useful
 talktome set voices.en bf_emma         # talktome voices --lang en
 talktome set speed.en 1.2              # per language
 talktome name "Data cleaning"          # spoken name of the current session
+talktome gender f                      # or m; auto to improvise again
 talktome mute 30                       # minutes; `talktome unmute`
 ```
 

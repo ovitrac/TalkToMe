@@ -107,14 +107,40 @@ def cmd_say(a: argparse.Namespace) -> int:
     return 0
 
 
+def _describe(sid: str) -> str:
+    """“name” — she/he (how the gender was decided), for the current session."""
+    from . import gender
+    from .decide import session_gender, session_name
+
+    cfg = _load(required=False) or config.defaults()
+    st = state.load(sid)
+    ev = _session_event("test")
+    name = session_name(ev, st, cfg["language"])
+    sex = session_gender(st, cfg, name)
+    how = "set" if st.gender else "your map" if name in cfg["genders"] else gender.guess(name)[1]
+    return f"“{name}” — {'she' if sex == 'f' else 'he'} ({how})"
+
+
 def cmd_name(a: argparse.Namespace) -> int:
     sid = os.environ.get("CLAUDE_CODE_SESSION_ID", "")
     if not sid:
         return _err("no Claude Code session here; set TALKTOME_SESSION when launching instead")
     name = " ".join(a.name).strip()
     with state.locked(sid):
-        state.save(sid, replace(state.load(sid), name=name or None))
-    print(f"this session is now called “{name}”" if name else "session name cleared")
+        state.save(sid, replace(state.load(sid), name=name or None, gender=a.gender))
+    print(f"this session is now {_describe(sid)}" if name else f"session name cleared: {_describe(sid)}")
+    return 0
+
+
+def cmd_gender(a: argparse.Namespace) -> int:
+    sid = os.environ.get("CLAUDE_CODE_SESSION_ID", "")
+    if not sid:
+        return _err("no Claude Code session here; use `talktome set genders.NAME f|m` instead")
+    if a.gender:
+        with state.locked(sid):
+            st = state.load(sid)
+            state.save(sid, replace(st, gender=None if a.gender == "auto" else a.gender))
+    print(f"this session is {_describe(sid)}")
     return 0
 
 
@@ -220,7 +246,7 @@ def cmd_doctor(a: argparse.Namespace) -> int:
         try:
             cfg = config.load()
             muted = ", MUTED" if config.is_muted(cfg, time.time()) else ""
-            voice = cfg["voices"][cfg["language"]]
+            voice = "/".join(config.voice_for(cfg, cfg["language"], g) for g in config.GENDERS)
             line(
                 True,
                 "config",
@@ -344,7 +370,14 @@ def parser() -> argparse.ArgumentParser:
 
     s = sub.add_parser("name", help="give the current Claude Code session a spoken name")
     s.add_argument("name", nargs="*")
+    s.add_argument("--gender", choices=config.GENDERS, help="f or m; omitted: improvised from the name")
     s.set_defaults(func=cmd_name)
+
+    s = sub.add_parser(
+        "gender", help="show, set (f, m) or improvise again (auto) the current session's gender"
+    )
+    s.add_argument("gender", nargs="?", choices=(*config.GENDERS, "auto"))
+    s.set_defaults(func=cmd_gender)
 
     s = sub.add_parser(
         "set", help="set a configuration value, e.g. `set language fr`, `set voices.en bf_emma`"

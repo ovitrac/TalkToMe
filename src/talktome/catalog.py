@@ -14,7 +14,7 @@ from importlib.resources import files
 from typing import Any
 
 SCHEMA = "talktome-catalog/1"
-PLACEHOLDERS = frozenset({"name", "session"})
+PLACEHOLDERS = frozenset({"name", "session", "his"})
 
 # Removal of an empty {name} together with its comma, tried in order (one {name} per template at most).
 _DROP_NAME: tuple[tuple[re.Pattern[str], bool], ...] = (
@@ -93,8 +93,10 @@ def respell(text: str, mapping: dict[str, str]) -> str:
     return text
 
 
-def substitute(text: str, name: str, session: str) -> str:
-    """Fill {name} and {session}; an empty name goes with its comma. Other braces are left as they are."""
+def substitute(text: str, name: str, session: str, gender: str = "") -> str:
+    """Fill {name}, {session} and {his} (his / her); an empty name goes with its comma. Other braces stay."""
+    from .gender import pronoun
+
     capitalize = False
     if not name.strip():
         for pattern, cap in _DROP_NAME:
@@ -102,7 +104,9 @@ def substitute(text: str, name: str, session: str) -> str:
             if n:
                 capitalize = cap
                 break
-    text = text.replace("{name}", name.strip()).replace("{session}", session)
+    text = (
+        text.replace("{name}", name.strip()).replace("{session}", session).replace("{his}", pronoun(gender))
+    )
     text = re.sub(r"\s{2,}", " ", text).strip()
     if capitalize and text:
         text = text[0].upper() + text[1:]

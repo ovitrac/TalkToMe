@@ -134,7 +134,15 @@ def test_test_event_bypasses_mute_and_bookkeeping(cfg: dict[str, Any]) -> None:
 def test_useful_text(cfg: dict[str, Any]) -> None:
     u: Utterance = run(ev("stop"), SessionState(turn_start=0.0), cfg, 100.0).utterance
     assert u.text == "Ada, the results of alpha landed."
-    assert (u.register, u.lang, u.mood, u.voice, u.pitch_st) == ("useful", "en", "cheerful", "bm_george", 0.0)
+    # "alpha" ends in -a: improvised as feminine, so the female English voice speaks.
+    assert (u.register, u.lang, u.mood, u.voice, u.pitch_st, u.gender) == (
+        "useful",
+        "en",
+        "cheerful",
+        "bf_emma",
+        0.0,
+        "f",
+    )
     assert u.speed == pytest.approx(moods.MOODS["cheerful"].speed)
 
 

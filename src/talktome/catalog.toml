@@ -1,7 +1,8 @@
 # TalkToMe message catalogue (design §4) — schema talktome-catalog/1
 # Author: Olivier Vitrac, PhD, HDR — Adservio Innovation Lab — Adservio Group — olivier.vitrac@adservio.fr
 #
-# Placeholders: {session} (required) and {name} (optional, at most once; removed with its comma when empty).
+# Placeholders: {session} (required), {name} (optional, at most once; removed with its comma when empty), and
+# {his} (his / her, from the session's gender). Sessions are "he" or "she", never "it".
 # useful: exactly one sober sentence per class. fun: rotating variations, never the same twice in a row.
 # French uses tutoiement. Users override any list under "templates" in their configuration.
 
@@ -31,21 +32,21 @@ attention = [
   "Knock knock, {name}. {session} needs your green light.",
   "{name}, {session} is waiting at the door for your approval.",
   "Excuse me, {name}: {session} needs your signature.",
-  "{session} is holding its breath, {name}. Permission, please?",
-  "{name}, one click from you and {session} is back on its way.",
+  "{session} is holding {his} breath, {name}. Permission, please?",
+  "{name}, one click from you and {session} is back on {his} way.",
 ]
 input = [
   "Your move, {name}. {session} is waiting.",
   "{session} is all ears, {name}.",
-  "{name}, {session} has said its piece. Over to you.",
+  "{name}, {session} has said {his} piece. Over to you.",
   "Whenever you're ready, {name}, {session} is listening.",
-  "{session} is twiddling its thumbs, {name}.",
+  "{session} is twiddling {his} thumbs, {name}.",
 ]
 landed = [
   "Ta-da! {session} has delivered, {name}.",
   "{name}, fresh results from {session}, still warm.",
   "Mission complete for {session}. Come and see, {name}.",
-  "{session} has landed its work on your desk, {name}.",
+  "{session} has landed {his} work on your desk, {name}.",
   "Good news, {name}: {session} is done.",
 ]
 

@@ -31,6 +31,8 @@ It returns at once; the speech is queued behind other sessions.
   outcome.
 - **Never** speak secrets, `TAG-…` placeholders, file paths, code, command output or quoted content: anyone in
   the room hears it. TalkToMe refuses placeholders and texts over 280 characters.
+- **Sessions are people.** Each session is "he" or "she", never "it"; write `{his}` and TalkToMe fills
+  *his* or *her* from the session's gender.
 - A deliberate message replaces the automatic "results landed" alert of the same turn.
 
 ## Settings: `/talktome ARGUMENTS`
@@ -41,14 +43,22 @@ Run the matching command, then report the result in one line.
 |---|---|
 | `en`, `fr` | `talktome set language en` (or `fr`) |
 | `useful`, `fun` | `talktome set register useful` (or `fun`) |
-| `voice NAME` | `talktome set voices.LANG NAME` with the current language; list: `talktome voices --lang LANG` |
+| `voice NAME` | `talktome set voices.LANG.G NAME` (current language; G = the voice's gender, second letter of its name: `bf_emma` → f, `bm_lewis` → m); list: `talktome voices --lang LANG` |
 | `speed X` | `talktome set speed.LANG X` with the current language (0.5–2.0) |
 | `mood CLASS MOOD` | `talktome set moods.CLASS MOOD` (classes: help, attention, input, landed) |
-| `name TEXT` | `talktome name "TEXT"` — this session's spoken name |
+| `name TEXT` | `talktome name "TEXT" --gender f\|m` — this session's spoken name (see below) |
+| `gender f\|m\|auto` | `talktome gender f` (or `m`; `auto` lets TalkToMe improvise again) |
 | `mute [MINUTES]`, `unmute` | `talktome mute [MINUTES]`, `talktome unmute` |
 | `test` | `talktome test` — plays a sample now |
 | `say TEXT` | `talktome say "TEXT"` |
 | `status` or nothing | `talktome doctor` |
+
+## Gender of a session
+
+The gender sets the English voice (female or male) and *his* / *her*; French has one voice. When you name a
+session, give it the gender a native speaker would hear: given names by usage (Hermes → m, Ariadne → f), things
+by their French grammatical gender (a chair → la chaise → f; an engine → le moteur → m). If nothing comes to
+mind, omit `--gender`: TalkToMe improvises from the spelling and keeps that choice for the name.
 
 If `talktome` is not found, the Python package is missing: tell the user to run
 `pipx install git+https://github.com/ovitrac/TalkToMe` and then `talktome setup --fetch`.
