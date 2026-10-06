@@ -224,8 +224,9 @@ plugin/
 └── skills/talktome/SKILL.md           # /talktome
 ```
 
-- **Hooks.** Every entry runs `talktome hook 2>/dev/null || true` with a short timeout. If TalkToMe is not
-  installed, the session is unaffected. The plugin adds hooks next to the existing ones and never edits
+- **Hooks.** Every entry runs `hooks/talktome-hook.sh`, which passes stdin to `talktome hook` (found on `PATH`
+  or in `~/.local/bin`), prints nothing and always exits 0. If TalkToMe is not installed, the session is
+  unaffected. The plugin adds hooks next to the existing ones and never edits
   `settings.json` itself.
 - **Skill.** User-invocable as `/talktome …` (`/talktome fr`, `/talktome fun`, `/talktome voice bf_emma`,
   `/talktome mute 30`, `/talktome name "Data cleaning"`). Claude may also invoke it in two cases: when the user

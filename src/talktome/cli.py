@@ -68,6 +68,18 @@ def _report(rec: dict[str, Any]) -> int:
 # --- commands -------------------------------------------------------------------------------------------
 
 
+def cmd_hook(a: argparse.Namespace) -> int:
+    """Claude Code hook entry: reads the event on stdin, prints nothing, always exits 0."""
+    from . import hook
+
+    try:
+        raw = sys.stdin.read()
+    except (OSError, ValueError):
+        return 0
+    hook.run(raw, os.environ)
+    return 0
+
+
 def cmd_say(a: argparse.Namespace) -> int:
     text = " ".join(a.text).strip()
     if not text:
@@ -319,6 +331,9 @@ def parser() -> argparse.ArgumentParser:
     )
     p.add_argument("--version", action="version", version=f"talktome {__version__}")
     sub = p.add_subparsers(dest="cmd", required=True, metavar="COMMAND")
+
+    s = sub.add_parser("hook", help="Claude Code hook entry (event JSON on stdin; silent)")
+    s.set_defaults(func=cmd_hook)
 
     s = sub.add_parser("say", help="speak a message (from the skill or by hand)")
     s.add_argument("text", nargs="+")

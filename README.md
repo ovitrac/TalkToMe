@@ -5,8 +5,8 @@ and mood.
 
 > *"Hi Olivier, I need your help on…"* · *"The results of [THIS SESSION] landed."*
 
-**Status:** v0.1 in development — speech and command line work (`talktome say`, `test`, `doctor`); the Claude
-Code hooks and plugin come next. Design: `base/DESIGN_TALKTOME_20261006.md`; decisions: `base/DECISIONS.md`.
+**Status:** v0.1 in development — speech, command line, Claude Code hooks and plugin. Design:
+`base/DESIGN_TALKTOME_20261006.md`; decisions: `base/DECISIONS.md`.
 
 ## Intent
 
@@ -18,6 +18,53 @@ help, needs your attention, or has finished a long piece of work, and tells you 
 - English by default, French available; voice, speed, addressee name and mood are configurable.
 - Short templated messages only by default: nothing from your transcript is read aloud.
 - Never slows down or breaks a Claude Code session.
+
+## Install
+
+1. The speaking engine (Python ≥ 3.11, Linux or macOS):
+
+   ```bash
+   pipx install git+https://github.com/ovitrac/TalkToMe
+   talktome setup --name "Your name" --fetch   # Kokoro model files, 338 MB, SHA-256 checked
+   talktome doctor
+   ```
+
+   Already have `kokoro-v1.0.onnx` and `voices-v1.0.bin`? Use `talktome setup --models-dir DIR` instead of
+   `--fetch`.
+
+2. The Claude Code plugin (hooks and the `/talktome` skill), from inside Claude Code:
+
+   ```text
+   /plugin marketplace add ovitrac/TalkToMe
+   /plugin install talktome@talktome
+   ```
+
+## What you hear
+
+| When | English (*useful*) |
+|---|---|
+| a session asks you a question or shows a plan | "Ada, alpha needs your help." |
+| a session asks for a permission | "Ada, alpha needs your attention." |
+| a session waits for you (reminder, at most every 5 min) | "Ada, alpha needs your input." |
+| a turn of 60 s or more has finished | "Ada, the results of alpha landed." |
+
+The *fun* register rotates natural variations; French uses *tu*. Each message opens with a short chime that
+carries its mood. Sessions speak one at a time.
+
+## Tune it
+
+```bash
+talktome test                          # hear a sample
+talktome set language fr               # or en
+talktome set register fun              # or useful
+talktome set voices.en bf_emma         # talktome voices --lang en
+talktome set speed.en 1.2              # per language
+talktome name "Data cleaning"          # spoken name of the current session
+talktome mute 30                       # minutes; `talktome unmute`
+```
+
+Inside Claude Code: `/talktome fr`, `/talktome fun`, `/talktome voice bf_emma`, `/talktome mute 30`. Everything
+lives in `~/.config/talktome/config.json`; every utterance is logged in `~/.local/state/talktome/log.jsonl`.
 
 ## License
 
