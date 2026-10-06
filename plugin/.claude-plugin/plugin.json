@@ -1,6 +1,6 @@
 {
   "name": "talktome",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Your Claude Code sessions call you by voice when they need your help, your attention or your input, or when a long turn has finished. Local text-to-speech, English or French, voice and mood configurable.",
   "author": {
     "name": "Olivier Vitrac",

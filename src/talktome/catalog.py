@@ -86,6 +86,21 @@ def templates(cfg: dict[str, Any], register: str, lang: str, cls: str) -> list[s
     return list(builtin()[register][lang][cls])
 
 
+_ELIDE = re.compile(r"\b(le|la|de|que) (?=[aeiouàâäéèêëîïôöùûüAEIOUÀÂÄÉÈÊËÎÏÔÖÙÛÜ])", re.IGNORECASE)
+_ELIDED = {"le": "l'", "la": "l'", "de": "d'", "que": "qu'"}
+
+
+def elide_fr(text: str) -> str:
+    """French elision before a vowel: le/la → l', de → d', que → qu' (les résultats d'Atlas, parce qu'Ada)."""
+
+    def repl(m: re.Match[str]) -> str:
+        word = m.group(1)
+        out = _ELIDED[word.lower()]
+        return out[0].upper() + out[1:] if word[0].isupper() else out
+
+    return _ELIDE.sub(repl, text)
+
+
 def respell(text: str, mapping: dict[str, str]) -> str:
     """Pronunciation respellings applied to whole words before phonemization only (never to logged text)."""
     for word, spoken in mapping.items():
@@ -108,6 +123,8 @@ def substitute(text: str, name: str, session: str, gender: str = "") -> str:
         text.replace("{name}", name.strip()).replace("{session}", session).replace("{his}", pronoun(gender))
     )
     text = re.sub(r"\s{2,}", " ", text).strip()
-    if capitalize and text:
-        text = text[0].upper() + text[1:]
+    if text and (capitalize or text[0].islower()):
+        text = (
+            text[0].upper() + text[1:]
+        )  # a sentence starts with a capital ("a session needs…" → "A session…")
     return text

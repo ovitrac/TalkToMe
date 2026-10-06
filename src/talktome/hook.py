@@ -53,6 +53,7 @@ def event_from_payload(payload: Mapping[str, Any], env: Mapping[str, str]) -> Ev
         session_id=_str(payload, "session_id"),
         cwd=_str(payload, "cwd"),
         session_name=env.get("TALKTOME_SESSION", ""),
+        session_mode=env.get("TALKTOME", ""),
         tool_name=_str(payload, "tool_name"),
         notification_type=notification_type(payload) if kind == "notification" else "",
         stop_hook_active=payload.get("stop_hook_active") is True,

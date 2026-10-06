@@ -48,8 +48,26 @@ def _session_event(kind: str, **kw: Any) -> Event:
         session_id=os.environ.get("CLAUDE_CODE_SESSION_ID", "") or "cli",
         cwd=os.getcwd(),
         session_name=os.environ.get("TALKTOME_SESSION", ""),
+        session_mode=os.environ.get("TALKTOME", ""),
         **kw,
     )
+
+
+def _deliver(ev: Event, cfg: dict[str, Any], wait: bool) -> int:
+    """Decide on a deliberate message, then speak it (detached, or now with a report when `wait`)."""
+    from . import journal, worker
+
+    with state.locked(ev.session_id):
+        d = decide(ev, state.load(ev.session_id), cfg, time.time(), random.Random())
+        state.save(ev.session_id, d.state)
+    if d.utterance is None:
+        journal.append({"session_id": ev.session_id, "event": ev.kind, "outcome": f"suppressed: {d.reason}"})
+        print(f"talktome: not spoken ({d.reason})", file=sys.stderr)
+        return 0
+    if wait:
+        return _report(worker.speak(d.utterance, cfg))
+    worker.spawn(d.utterance)
+    return 0
 
 
 def _report(rec: dict[str, Any]) -> int:
@@ -91,20 +109,36 @@ def cmd_say(a: argparse.Namespace) -> int:
     cfg = _load()
     if cfg is None:
         return 2
-    from . import journal, worker
+    return _deliver(_session_event("say", text=text, mood=a.mood or "", cls=a.cls or ""), cfg, a.wait)
 
-    ev = _session_event("say", text=text, mood=a.mood or "", cls=a.cls or "")
-    with state.locked(ev.session_id):
-        d = decide(ev, state.load(ev.session_id), cfg, time.time(), random.Random())
-        state.save(ev.session_id, d.state)
-    if d.utterance is None:
-        journal.append({"session_id": ev.session_id, "event": "say", "outcome": f"suppressed: {d.reason}"})
-        print(f"talktome: not spoken ({d.reason})", file=sys.stderr)
-        return 0
-    if a.wait:
-        return _report(worker.speak(d.utterance, cfg))
-    worker.spawn(d.utterance)
-    return 0
+
+def _fun(kind: str, a: argparse.Namespace) -> int:
+    """joke, fact, why: canned deliberate messages in the configured language (printed, then spoken)."""
+    from . import fun
+
+    cfg = _load()
+    if cfg is None:
+        return 2
+    lang = cfg["language"]
+    if kind == "why":
+        text = fun.why(lang, random.Random(a.seed) if a.seed is not None else random.Random())
+    else:
+        text = fun.pick(kind, lang, random.Random())
+    print(text)
+    mood = {"joke": "cheerful", "fact": "warm", "why": "neutral"}[kind]
+    return _deliver(_session_event("fun", text=text, mood=mood, cls=kind), cfg, a.wait)
+
+
+def cmd_joke(a: argparse.Namespace) -> int:
+    return _fun("joke", a)
+
+
+def cmd_fact(a: argparse.Namespace) -> int:
+    return _fun("fact", a)
+
+
+def cmd_why(a: argparse.Namespace) -> int:
+    return _fun("why", a)
 
 
 def _describe(sid: str) -> str:
@@ -129,6 +163,24 @@ def cmd_name(a: argparse.Namespace) -> int:
     with state.locked(sid):
         state.save(sid, replace(state.load(sid), name=name or None, gender=a.gender))
     print(f"this session is now {_describe(sid)}" if name else f"session name cleared: {_describe(sid)}")
+    return 0
+
+
+def cmd_mode(a: argparse.Namespace) -> int:
+    from .decide import session_mode
+
+    sid = os.environ.get("CLAUDE_CODE_SESSION_ID", "")
+    if not sid:
+        return _err(
+            "no Claude Code session here; launch with TALKTOME=off|discreet, or use a `private` folder rule"
+        )
+    if a.mode:
+        with state.locked(sid):
+            st = state.load(sid)
+            state.save(sid, replace(st, mode=None if a.mode == "auto" else a.mode))
+    cfg = _load(required=False) or config.defaults()
+    mode, source = session_mode(_session_event("test"), state.load(sid), cfg)
+    print(f"this session: {mode} ({source})")
     return 0
 
 
@@ -367,6 +419,21 @@ def parser() -> argparse.ArgumentParser:
     s.add_argument("--class", dest="cls", choices=config.CLASSES)
     s.add_argument("--wait", action="store_true", help="speak now and report, instead of detaching")
     s.set_defaults(func=cmd_say)
+
+    for name, func, help_ in (
+        ("joke", cmd_joke, "tell a joke (never the same until all have been told)"),
+        ("fact", cmd_fact, "tell a surprising fact"),
+        ("why", cmd_why, "answer why, as MATLAB's why does (same seed, same answer)"),
+    ):
+        s = sub.add_parser(name, help=help_)
+        if name == "why":
+            s.add_argument("seed", nargs="?", type=int)
+        s.add_argument("--wait", action="store_true", help="speak now and report, instead of detaching")
+        s.set_defaults(func=func)
+
+    s = sub.add_parser("mode", help="this session: on, discreet (no name, no free text), off, or auto")
+    s.add_argument("mode", nargs="?", choices=(*config.MODES, "auto"))
+    s.set_defaults(func=cmd_mode)
 
     s = sub.add_parser("name", help="give the current Claude Code session a spoken name")
     s.add_argument("name", nargs="*")

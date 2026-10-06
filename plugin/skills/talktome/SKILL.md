@@ -1,6 +1,6 @@
 ---
 name: talktome
-description: Speak to the user out loud through TalkToMe, and change how TalkToMe speaks. Use when the user asks to be told by voice ("tell me when it's done", "talk to me", "speak to me"), when a long task the user is not watching ends with an outcome they should hear (a failure especially), or when the user asks to change TalkToMe's language, register, voice, speed, mood or session name, or to mute it — including /talktome with arguments such as "fr", "fun", "voice bf_emma", "speed 1.2", "mute 30".
+description: Speak to the user out loud through TalkToMe, and change how TalkToMe speaks. Use when the user asks to be told by voice ("tell me when it's done", "talk to me", "speak to me"), asks TalkToMe for a joke, a surprising fact or a "why", when a long task the user is not watching ends with an outcome they should hear (a failure especially), or when the user asks to change TalkToMe's language, register, voice, speed, mood, session name or mode (on, discreet, off), or to mute it — including /talktome with arguments such as "fr", "fun", "off", "discreet", "joke", "why", "voice bf_emma", "speed 1.2", "mute 30".
 user-invocable: true
 argument-hint: "[say <text> | en | fr | useful | fun | voice <name> | speed <x> | name <text> | mute [min] | unmute | test | status]"
 allowed-tools:
@@ -34,6 +34,8 @@ It returns at once; the speech is queued behind other sessions.
 - **Sessions are people.** Each session is "he" or "she", never "it"; write `{his}` and TalkToMe fills
   *his* or *her* from the session's gender.
 - A deliberate message replaces the automatic "results landed" alert of the same turn.
+- **Confidential sessions.** In a `discreet` session TalkToMe refuses free text (`say`): do not retry, and do not
+  move the content into a joke or a fact. In an `off` session nothing is spoken.
 
 ## Settings: `/talktome ARGUMENTS`
 
@@ -48,7 +50,10 @@ Run the matching command, then report the result in one line.
 | `mood CLASS MOOD` | `talktome set moods.CLASS MOOD` (classes: help, attention, input, landed) |
 | `name TEXT` | `talktome name "TEXT" --gender f\|m` — this session's spoken name (see below) |
 | `gender f\|m\|auto` | `talktome gender f` (or `m`; `auto` lets TalkToMe improvise again) |
-| `mute [MINUTES]`, `unmute` | `talktome mute [MINUTES]`, `talktome unmute` |
+| `mute [MINUTES]`, `unmute` | `talktome mute [MINUTES]`, `talktome unmute` — every session |
+| `off`, `discreet`, `on` | `talktome mode off` (or `discreet`, `on`; `auto` follows the launch value and folder rules again) — this session only |
+| `joke`, `fact` | `talktome joke`, `talktome fact` — a joke or a surprising fact, in the configured language |
+| `why [N]` | `talktome why [N]` — an answer to "why?", like MATLAB's `why` |
 | `test` | `talktome test` — plays a sample now |
 | `say TEXT` | `talktome say "TEXT"` |
 | `status` or nothing | `talktome doctor` |

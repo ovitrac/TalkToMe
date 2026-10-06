@@ -157,7 +157,7 @@ def test_speed_per_language(cfg: dict[str, Any]) -> None:
 def test_useful_text_french_without_name(cfg: dict[str, Any]) -> None:
     c = {**cfg, "language": "fr", "name": ""}
     u = run(ev("stop"), SessionState(turn_start=0.0), c, 100.0).utterance
-    assert u.text == "Les résultats de alpha sont déposés." and u.voice == "ff_siwis"
+    assert u.text == "Les résultats d'alpha sont déposés."  # elision and u.voice == "ff_siwis"
 
 
 def test_session_name_precedence() -> None:

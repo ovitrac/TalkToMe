@@ -9,12 +9,14 @@ from __future__ import annotations
 import os
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 COMMANDS: dict[str, list[str]] = {
     "pw-play": ["pw-play"],
     "paplay": ["paplay"],
     "aplay": ["aplay", "-q"],
+    "afplay": ["afplay"],
     "ffplay": ["ffplay", "-nodisp", "-autoexit", "-loglevel", "quiet"],
     "mpv": ["mpv", "--no-video", "--really-quiet"],
 }
@@ -53,14 +55,13 @@ def play(path: Path, pref: str = "auto", timeout: float = 60.0) -> str:
     return argv[0]
 
 
-def spd_say(text: str, lang: str, timeout: float = 60.0) -> None:
-    """Fallback voice (speech-dispatcher) when Kokoro or its model files are unavailable."""
-    if not shutil.which("spd-say"):
-        raise PlayerError("no fallback voice (spd-say not found)")
-    subprocess.run(
-        ["spd-say", "-w", "-l", lang[:2], text],
-        check=True,
-        timeout=timeout,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-    )
+def fallback_speak(text: str, lang: str, timeout: float = 60.0) -> str:
+    """Fallback voice when Kokoro or its model files are unavailable: spd-say (Linux), say (macOS)."""
+    if shutil.which("spd-say"):
+        argv = ["spd-say", "-w", "-l", lang[:2], text]
+    elif sys.platform == "darwin" and shutil.which("say"):
+        argv = ["say", text]
+    else:
+        raise PlayerError("no fallback voice (spd-say or macOS say not found)")
+    subprocess.run(argv, check=True, timeout=timeout, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    return argv[0]

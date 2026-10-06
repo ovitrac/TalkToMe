@@ -117,19 +117,24 @@ def test_speak_plays_and_logs(cfg: dict[str, Any], fake_models: None, tmp_path: 
     assert journal.tail(1)[0]["text"] == U.text
 
 
-def test_speak_falls_back_to_spd_say(cfg: dict[str, Any], monkeypatch: pytest.MonkeyPatch) -> None:
+def test_speak_falls_back_to_the_system_voice(cfg: dict[str, Any], monkeypatch: pytest.MonkeyPatch) -> None:
     said: list[tuple[str, str]] = []
-    monkeypatch.setattr(player, "spd_say", lambda text, lang: said.append((text, lang)))
+
+    def fake(text: str, lang: str) -> str:
+        said.append((text, lang))
+        return "spd-say"
+
+    monkeypatch.setattr(player, "fallback_speak", fake)
     rec = worker.speak(U, cfg)
     assert rec["outcome"] == "spoken" and rec["engine"] == "spd-say" and "ModelError" in rec["engine_error"]
     assert said == [(U.text, "en")]
 
 
 def test_speak_reports_every_failure(cfg: dict[str, Any], monkeypatch: pytest.MonkeyPatch) -> None:
-    def broken(text: str, lang: str) -> None:
+    def broken(text: str, lang: str) -> str:
         raise player.PlayerError("no fallback voice")
 
-    monkeypatch.setattr(player, "spd_say", broken)
+    monkeypatch.setattr(player, "fallback_speak", broken)
     rec = worker.speak(U, cfg)
     assert rec["outcome"].startswith("error: PlayerError")
     assert journal.tail(1)[0]["outcome"] == rec["outcome"]

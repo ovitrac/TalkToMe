@@ -1,0 +1,121 @@
+# TalkToMe — jokes, surprising facts and `why` (design §7.1) — schema talktome-fun/1
+# Author: Olivier Vitrac, PhD, HDR — Adservio Innovation Lab — Adservio Group — olivier.vitrac@adservio.fr
+#
+# Written to be heard: no joke relies on reading digits or symbols aloud. Facts are well established ones only.
+# `why` answers in the spirit of MATLAB's `why`: a random, grammatical, useless answer (own word lists).
+
+schema = "talktome-fun/1"
+
+[joke]
+en = [
+  "Why do programmers prefer dark mode? Because light attracts bugs.",
+  "How many programmers does it take to change a light bulb? None. That's a hardware problem.",
+  "Why don't scientists trust atoms? Because they make up everything.",
+  "I told my wife she was drawing her eyebrows too high. She looked surprised.",
+  "What do you call a fake noodle? An impasta.",
+  "Why did the scarecrow win an award? Because he was outstanding in his field.",
+  "An S Q L query walks into a bar, goes up to two tables and asks: may I join you?",
+  "Why do Java developers wear glasses? Because they don't C sharp.",
+  "I would tell you a joke about U D P, but you might not get it.",
+  "Why was the math book sad? It had too many problems.",
+  "Why did the developer go broke? Because he used up all his cache.",
+  "I'm reading a book about anti-gravity. It's impossible to put down.",
+]
+fr = [
+  "C'est l'histoire d'un pingouin qui respirait par les fesses. Un jour, il s'est assis. Et il est mort.",
+  "Pourquoi les plongeurs plongent-ils toujours en arrière, et jamais en avant ? Parce que sinon, ils tombent dans le bateau.",
+  "Que fait une fraise sur un cheval ? Tagada, tagada !",
+  "Qu'est-ce qui est jaune et qui attend ? Jonathan.",
+  "Pourquoi les canards sont-ils toujours à l'heure ? Parce qu'ils sont dans l'étang.",
+  "Quel est le comble pour un électricien ? De ne pas être au courant.",
+  "C'est l'histoire d'un homme qui entre dans un café. Et plouf.",
+  "Combien de développeurs faut-il pour changer une ampoule ? Aucun : c'est un problème matériel.",
+  "Pourquoi les poissons détestent-ils l'ordinateur ? À cause du Net.",
+  "Que dit une imprimante dans l'eau ? J'ai papier.",
+  "Pourquoi les éléphants n'utilisent-ils pas d'ordinateur ? Parce qu'ils ont peur de la souris.",
+  "Que dit un oignon quand il se cogne ? Aïe !",
+]
+
+[fact]
+en = [
+  "Did you know? Octopuses have three hearts and blue blood.",
+  "Did you know? A day on Venus lasts longer than a year on Venus.",
+  "Did you know? Bananas are slightly radioactive, because of the potassium they contain.",
+  "Did you know? There are more trees on Earth than stars in the Milky Way.",
+  "Did you know? Cleopatra lived closer in time to us than to the building of the Great Pyramid of Giza.",
+  "Did you know? Wombats produce cube-shaped droppings.",
+  "Did you know? The University of Oxford is older than the Aztec Empire.",
+  "Did you know? A bolt of lightning is about five times hotter than the surface of the Sun.",
+  "Did you know? Sea otters hold hands while they sleep, so they don't drift apart.",
+  "Did you know? In nineteen forty-seven, a real moth stuck in a relay of the Harvard Mark Two was logged as the first actual case of a bug being found.",
+  "Did you know? Stretched out, the DNA in a single human cell is about two metres long.",
+  "Did you know? Flamingos are pink because of the pigments in what they eat.",
+  "Did you know? Light from the Sun takes about eight minutes and twenty seconds to reach us.",
+  "Did you know? The national animal of Scotland is the unicorn.",
+  "Did you know? A shrimp's heart is in its head.",
+]
+fr = [
+  "Tu savais ? Les pieuvres ont trois cœurs et le sang bleu.",
+  "Tu savais ? Sur Vénus, une journée dure plus longtemps qu'une année.",
+  "Tu savais ? Les bananes sont légèrement radioactives, à cause du potassium qu'elles contiennent.",
+  "Tu savais ? Il y a plus d'arbres sur Terre que d'étoiles dans la Voie lactée.",
+  "Tu savais ? Cléopâtre a vécu plus près de nous dans le temps que de la construction de la grande pyramide de Gizeh.",
+  "Tu savais ? Les wombats produisent des crottes en forme de cube.",
+  "Tu savais ? L'université d'Oxford est plus ancienne que l'Empire aztèque.",
+  "Tu savais ? Un éclair est environ cinq fois plus chaud que la surface du Soleil.",
+  "Tu savais ? Les loutres de mer se tiennent la patte en dormant, pour ne pas dériver chacune de son côté.",
+  "Tu savais ? En mille neuf cent quarante-sept, un vrai papillon de nuit, coincé dans un relais du Harvard Mark Deux, a été consigné comme le premier vrai cas de bug.",
+  "Tu savais ? Déroulé, l'ADN d'une seule cellule humaine mesure environ deux mètres.",
+  "Tu savais ? Les flamants roses doivent leur couleur aux pigments de leur alimentation.",
+  "Tu savais ? La lumière du Soleil met environ huit minutes et vingt secondes à nous parvenir.",
+  "Tu savais ? L'animal national de l'Écosse est la licorne.",
+  "Tu savais ? Le cœur de la crevette se trouve dans sa tête.",
+]
+
+[why.en]
+special = [
+  "Why not?",
+  "Don't ask.",
+  "Because the tests said so.",
+  "It seemed like a good idea at the time.",
+  "Ask the compiler.",
+  "It's in the specification.",
+  "Legacy reasons.",
+  "It works on my machine.",
+  "No comment.",
+  "Because it is Friday.",
+]
+names = ["Ada", "Alan", "Grace", "Linus", "Margaret", "Dennis", "Barbara", "Edsger", "Frances", "Donald"]
+adjectives = ["tall", "sleepy", "brilliant", "nervous", "retired", "caffeinated", "mysterious", "anxious", "generous", "stubborn"]
+nouns = ["engineer", "mathematician", "intern", "project manager", "hamster", "compiler", "architect", "customer", "auditor", "robot"]
+verbs = ["wanted", "asked for", "approved", "insisted on", "suggested", "demanded", "dreamed of", "refactored"]
+goals = ["please", "impress", "confuse", "reassure", "fool", "satisfy", "outsmart", "delight"]
+
+[why.fr]
+special = [
+  "Pourquoi pas ?",
+  "Ne demande pas.",
+  "Parce que les tests l'ont dit.",
+  "Ça semblait une bonne idée sur le moment.",
+  "Demande au compilateur.",
+  "C'est dans le cahier des charges.",
+  "Pour des raisons historiques.",
+  "Ça marche sur ma machine.",
+  "Sans commentaire.",
+  "Parce que c'est vendredi.",
+]
+names = ["Ada", "Alan", "Grace", "Linus", "Margaret", "Dennis", "Barbara", "Edsger", "Frances", "Donald"]
+# [masculine, feminine]
+adjectives = [
+  ["ensommeillé", "ensommeillée"], ["brillant", "brillante"], ["nerveux", "nerveuse"], ["retraité", "retraitée"],
+  ["survolté", "survoltée"], ["mystérieux", "mystérieuse"], ["inquiet", "inquiète"], ["généreux", "généreuse"],
+  ["têtu", "têtue"], ["surmené", "surmenée"],
+]
+# [noun, gender]
+nouns = [
+  ["ingénieur", "m"], ["mathématicienne", "f"], ["stagiaire", "m"], ["cheffe de projet", "f"], ["hamster", "m"],
+  ["compilateur", "m"], ["architecte", "f"], ["cliente", "f"], ["auditeur", "m"], ["robot", "m"],
+]
+# past participles: "Parce que X l'a <voulu>."
+verbs = ["voulu", "demandé", "approuvé", "exigé", "suggéré", "rêvé", "réclamé", "imposé"]
+goals = ["impressionner", "rassurer", "embrouiller", "contenter", "épater", "satisfaire", "amuser", "berner"]

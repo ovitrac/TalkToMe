@@ -5,7 +5,7 @@ and mood.
 
 > *"Hi Olivier, I need your help on…"* · *"The results of [THIS SESSION] landed."*
 
-**Status:** v0.1.0 — speech, command line, Claude Code hooks, plugin and `/talktome` skill. Design:
+**Status:** v0.2.0 — speech, command line, Claude Code hooks, plugin and `/talktome` skill, per-session modes. Design:
 `base/DESIGN_TALKTOME_20261006.md`; decisions: `base/DECISIONS.md`; changes: `CHANGELOG.md`.
 
 ## Intent
@@ -25,10 +25,10 @@ TalkToMe has two parts: the speaking engine (a Python package) and the Claude Co
 `/talktome` skill). The plugin is published in the **adservio** marketplace, where it can be installed alone or
 with the other Adservio tools.
 
-1. The speaking engine (Python ≥ 3.11, Linux or macOS):
+1. The speaking engine (Python ≥ 3.11; Linux; macOS should work through `afplay` but is untested):
 
    ```bash
-   pipx install git+https://github.com/ovitrac/TalkToMe@v0.1.0
+   pipx install git+https://github.com/ovitrac/TalkToMe@v0.2.0
    talktome setup --name "Your name" --fetch   # Kokoro model files, 338 MB, SHA-256 checked
    talktome doctor
    ```
@@ -71,10 +71,30 @@ talktome set voices.en bf_emma         # talktome voices --lang en
 talktome set speed.en 1.2              # per language
 talktome name "Data cleaning"          # spoken name of the current session
 talktome gender f                      # or m; auto to improvise again
-talktome mute 30                       # minutes; `talktome unmute`
+talktome mute 30                       # minutes, every session; `talktome unmute`
+talktome joke                          # a joke; also: talktome fact, talktome why
 ```
 
-Inside Claude Code: `/talktome fr`, `/talktome fun`, `/talktome voice bf_emma`, `/talktome mute 30`. Everything
+## Confidential sessions
+
+TalkToMe never reads your conversation aloud, but it does say the session's name — often a client's name.
+Each session has a mode:
+
+| Mode | What you hear |
+|---|---|
+| `on` (default) | as above |
+| `discreet` | the alerts, without the name: "Ada, a session needs your help."; no free text from Claude |
+| `off` | nothing |
+
+Set it inside a session (`/talktome off`, `/talktome discreet`, `/talktome on`), at launch
+(`TALKTOME=discreet claude`), or for whole folders in `~/.config/talktome/config.json`:
+
+```json
+"private": { "~/clients/*": "discreet" }
+```
+
+Inside Claude Code: `/talktome fr`, `/talktome fun`, `/talktome voice bf_emma`, `/talktome mute 30`,
+`/talktome joke`, `/talktome fact`, `/talktome why`. Everything
 lives in `~/.config/talktome/config.json`; every utterance is logged in `~/.local/state/talktome/log.jsonl`.
 
 ## License

@@ -112,8 +112,8 @@ def speak(u: Utterance, cfg: dict[str, Any], lock_timeout: float = LOCK_TIMEOUT_
             except Exception as e:  # engine or models unavailable: fallback voice
                 rec["engine_error"] = f"{type(e).__name__}: {e}"
                 t1 = time.monotonic()
-                player.spd_say(catalog.respell(u.text, cfg["respell"]), u.lang)
-                rec.update(engine="spd-say", play_s=round(time.monotonic() - t1, 3), outcome="spoken")
+                used = player.fallback_speak(catalog.respell(u.text, cfg["respell"]), u.lang)
+                rec.update(engine=used, play_s=round(time.monotonic() - t1, 3), outcome="spoken")
                 return rec
             t1 = time.monotonic()
             rec["player"] = player.play(path, cfg["player"])

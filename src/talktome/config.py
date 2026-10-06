@@ -19,9 +19,10 @@ SCHEMA = "talktome-config/1"
 LANGUAGES = ("en", "fr")
 REGISTERS = ("useful", "fun")
 CLASSES = ("help", "attention", "input", "landed")
-PLAYERS = ("auto", "pw-play", "paplay", "aplay", "ffplay", "mpv")
-FREE_KEYS = ("templates", "respell", "genders")
+PLAYERS = ("auto", "pw-play", "paplay", "aplay", "afplay", "ffplay", "mpv")
+FREE_KEYS = ("templates", "respell", "genders", "private")
 GENDERS = ("f", "m")
+MODES = ("on", "discreet", "off")
 
 DEFAULTS: dict[str, Any] = {
     "schema": SCHEMA,
@@ -45,6 +46,7 @@ DEFAULTS: dict[str, Any] = {
     "templates": {},
     "respell": {},
     "genders": {},
+    "private": {},
 }
 
 _VOICE = re.compile(r"^[a-z]{2}_[a-z0-9]+$")
@@ -195,6 +197,11 @@ def validate(cfg: dict[str, Any]) -> list[str]:
         isinstance(k, str) and v in GENDERS for k, v in genders.items()
     ):
         e.append(f"genders must map session names to one of {GENDERS}")
+    private = cfg.get("private")
+    if not isinstance(private, dict) or not all(
+        isinstance(k, str) and k and v in MODES for k, v in private.items()
+    ):
+        e.append(f"private must map folder patterns to one of {MODES}")
     respell = cfg.get("respell")
     if not isinstance(respell, dict) or not all(
         isinstance(k, str) and isinstance(v, str) and k for k, v in respell.items()

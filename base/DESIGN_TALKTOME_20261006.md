@@ -190,6 +190,19 @@ told apart by the second letter of the Kokoro name: `bf_`, `af_` / `bm_`, `am_`)
 *her*). French keeps its single voice `ff_siwis` for every session (D-0014); its templates use no gendered
 agreement on the session.
 
+### 5.2 Per-session modes (D-0016)
+
+| Mode | Behaviour |
+|---|---|
+| `on` | default |
+| `discreet` | the session is spoken as "a session" / "une session", with the gender and voice of that phrase (nothing that identifies it); free text (`say`) refused; canned messages (joke, fact, why) allowed |
+| `off` | silent, the turn bookkeeping still runs |
+
+Precedence: set in the session (`talktome mode`, state keyed on `CLAUDE_CODE_SESSION_ID`) → `TALKTOME` at launch →
+the first matching folder rule of `private` (`fnmatch` on the working directory and its parents, `~` expanded) →
+`on`. `private` is empty by default (the lead: *"discreet mode actionable but not by default"*). `talktome test`
+plays even in an `off` session and applies `discreet`.
+
 ## 6. Configuration
 
 One file, `~/.config/talktome/config.json` (schema `talktome-config/1`), written by `talktome setup` and
@@ -214,7 +227,8 @@ One file, `~/.config/talktome/config.json` (schema `talktome-config/1`), written
   "fun": { "voice_pool": ["bm_george", "bf_emma", "am_michael", "af_heart", "bm_lewis", "bf_isabella"], "voice_per_session": true },
   "templates": {},
   "respell": {},
-  "genders": {}
+  "genders": {},
+  "private": {}
 }
 ```
 
@@ -230,12 +244,22 @@ the lock; `log.jsonl`) and audio in `~/.cache/talktome/`.
 | `talktome say [--mood M] [--class C] TEXT` | deliberate message (skill or user) |
 | `talktome name TEXT [--gender f\|m]` | name the current session (gender improvised if omitted) |
 | `talktome gender [f\|m\|auto]` | show or set the current session's gender |
+| `talktome mode [on\|discreet\|off\|auto]` | show or set the current session's mode (§5.2) |
+| `talktome joke` / `talktome fact` / `talktome why [N]` | a joke, a surprising fact, an answer to "why?" (§7.1) |
 | `talktome set KEY VALUE` / `talktome show` | settings (`set language fr`, `set register fun`, `set voices.en bf_emma`, `set name Olivier`) |
 | `talktome voices [--lang en\|fr]` | list voices |
 | `talktome mute [MINUTES]` / `talktome unmute` | silence |
 | `talktome test [--class C] [--mood M]` | speak a sample, on request only |
 | `talktome doctor` | models (SHA-256), player, config, `PATH` link, last log lines |
 | `talktome setup [--models-dir DIR \| --fetch]` | first configuration, link in `~/.local/bin`, models |
+
+### 7.1 Jokes, facts and why (D-0017)
+
+Canned deliberate messages, printed then spoken, in the configured language (`fun.toml`). Jokes and facts are
+dealt from a shuffled deck kept in the state directory: none repeats before all have been told. Written to be
+heard (no digits or symbols to read aloud); facts are well-established ones only. `why` answers like MATLAB's
+`why`: a special case one time in five, else a grammatical sentence from word lists (own lists; French agreement
+and elision); `why N` is reproducible.
 
 ## 8. Plugin and skill
 

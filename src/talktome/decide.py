@@ -7,10 +7,12 @@ License: MIT
 from __future__ import annotations
 
 import json
+import os
 import random
 import zlib
 from dataclasses import asdict, dataclass, replace
-from pathlib import PurePath
+from fnmatch import fnmatch
+from pathlib import PurePath, PurePosixPath
 from typing import Any
 
 from . import catalog, config, gender, moods
@@ -20,16 +22,19 @@ from .state import SessionState
 HELP_TOOLS = frozenset({"AskUserQuestion", "ExitPlanMode"})
 NOTIFICATIONS = {"permission_prompt": "attention", "idle_prompt": "input", "elicitation_dialog": "help"}
 FALLBACK_SESSION = {"en": "this session", "fr": "cette session"}
+DISCREET_SESSION = {"en": "a session", "fr": "une session"}
+DELIBERATE = ("say", "fun")  # messages asked for, not alerts: free text (say) or canned (joke, fact, why)
 FR_PITCH_OFFSETS = (-2.0, -1.0, 0.0, 1.0, 2.0)
 PITCH_LIMIT = 4.0
 
 
 @dataclass(frozen=True)
 class Event:
-    kind: str  # "prompt" | "pretool" | "notification" | "stop" | "say" | "test"
+    kind: str  # "prompt" | "pretool" | "notification" | "stop" | "say" | "fun" | "test"
     session_id: str = ""
     cwd: str = ""
     session_name: str = ""  # TALKTOME_SESSION given at launch
+    session_mode: str = ""  # TALKTOME given at launch: on | discreet | off
     tool_name: str = ""
     notification_type: str = ""
     stop_hook_active: bool = False
@@ -53,6 +58,7 @@ class Utterance:
     pitch_st: float
     earcon: bool
     gender: str = ""
+    mode: str = "on"
 
     def to_json(self) -> str:
         return json.dumps(asdict(self), ensure_ascii=False)
@@ -76,8 +82,8 @@ def classify(event: Event) -> str | None:
         return NOTIFICATIONS.get(event.notification_type)
     if event.kind == "stop":
         return "landed"
-    if event.kind in ("say", "test"):
-        return event.cls or "say"
+    if event.kind in ("say", "fun", "test"):
+        return event.cls or event.kind
     return None
 
 
@@ -87,6 +93,21 @@ def session_name(event: Event, st: SessionState, lang: str) -> str:
         if candidate and candidate.strip():
             return candidate.strip()
     return FALLBACK_SESSION[lang]
+
+
+def session_mode(event: Event, st: SessionState, cfg: dict[str, Any]) -> tuple[str, str]:
+    """(mode, where it comes from): set in the session, else at launch, else a folder rule, else on."""
+    if st.mode in config.MODES:
+        return st.mode, "set in the session"
+    if event.session_mode in config.MODES:
+        return event.session_mode, "TALKTOME at launch"
+    if event.cwd:
+        cwd = PurePosixPath(event.cwd)
+        for pattern, mode in cfg["private"].items():
+            target = os.path.expanduser(pattern)
+            if any(fnmatch(str(p), target) for p in (cwd, *cwd.parents)):
+                return mode, f"folder rule {pattern}"
+    return "on", "default"
 
 
 def session_gender(st: SessionState, cfg: dict[str, Any], session: str) -> str:
@@ -117,15 +138,19 @@ def _voice_and_pitch(
 
 
 def build(
-    event: Event, st: SessionState, cfg: dict[str, Any], cls: str, rng: random.Random
+    event: Event, st: SessionState, cfg: dict[str, Any], cls: str, rng: random.Random, mode: str = "on"
 ) -> tuple[Utterance, SessionState]:
     """Compose the utterance for class `cls`; returns it with the rotation state to keep."""
     lang, register = cfg["language"], cfg["register"]
-    session = session_name(event, st, lang)
-    sex = session_gender(st, cfg, session)
+    if mode == "discreet":  # no name, no gender of its own: nothing that identifies the session
+        session = DISCREET_SESSION[lang]
+        sex = gender.guess(session)[0]
+    else:
+        session = session_name(event, st, lang)
+        sex = session_gender(st, cfg, session)
     mood = moods.get(event.mood or cfg["moods"].get(cls, "neutral"))
     variants = st.variants
-    if event.kind == "say":
+    if event.kind in DELIBERATE:
         text = catalog.substitute(event.text, cfg["name"], session, sex)
     else:
         pool = catalog.templates(cfg, register, lang, cls)
@@ -135,6 +160,8 @@ def build(
             idx = rng.choice([i for i in range(len(pool)) if i != last])
         variants = {**st.variants, cls: idx}
         text = catalog.substitute(pool[idx], cfg["name"], session, sex)
+    if lang == "fr":
+        text = catalog.elide_fr(text)
     voice, pitch = _voice_and_pitch(cfg, lang, session, sex, mood.pitch_st)
     utt = Utterance(
         session_id=event.session_id,
@@ -150,6 +177,7 @@ def build(
         pitch_st=pitch,
         earcon=bool(cfg["earcons"]),
         gender=sex,
+        mode=mode,
     )
     return utt, replace(st, variants=variants)
 
@@ -160,9 +188,16 @@ def decide(event: Event, st: SessionState, cfg: dict[str, Any], now: float, rng:
     cls = classify(event)
     if cls is None:
         return Decision(None, "not an alert", st)
-    if event.kind == "test":  # explicit request: no threshold, no mute, no alert bookkeeping
-        utt, st = build(event, st, cfg, cls, rng)
+    mode, _ = session_mode(event, st, cfg)
+    if (
+        event.kind == "test"
+    ):  # explicit request: no threshold, no mute, no alert bookkeeping; discreet applies
+        utt, st = build(event, st, cfg, cls, rng, "on" if mode == "off" else mode)
         return Decision(utt, "test", st)
+    if mode == "off":
+        return Decision(None, "session off", replace(st, turn_start=None) if event.kind == "stop" else st)
+    if mode == "discreet" and event.kind == "say":
+        return Decision(None, "discreet session: free text is off", st)
     th = cfg["thresholds"]
     if event.kind == "stop":
         after = replace(st, turn_start=None)
@@ -172,21 +207,21 @@ def decide(event: Event, st: SessionState, cfg: dict[str, Any], now: float, rng:
             return Decision(None, "no turn start", after)
         if now - st.turn_start < th["landed_min_turn_s"]:
             return Decision(None, "short turn", after)
-        if st.last_say is not None and st.last_say >= st.turn_start:
+        if st.last_say is not None and st.last_say >= st.turn_start:  # a deliberate message replaces it
             return Decision(None, "said during the turn", after)
         st = after
-    alert = event.kind != "say"
+    alert = event.kind not in DELIBERATE
     if cls == "input" and st.last_spoken is not None and now - st.last_spoken < th["input_cooldown_s"]:
         return Decision(None, "cooldown", st)
     if alert and st.last_alert is not None and now - st.last_alert < th["debounce_s"]:
         return Decision(None, "debounce", st)
     if config.is_muted(cfg, now):
         return Decision(None, "muted", st)
-    utt, st = build(event, st, cfg, cls, rng)
+    utt, st = build(event, st, cfg, cls, rng, mode)
     st = replace(
         st,
         last_spoken=now,
         last_alert=now if alert else st.last_alert,
-        last_say=now if event.kind == "say" else st.last_say,
+        last_say=now if not alert else st.last_say,
     )
     return Decision(utt, "spoken", st)
