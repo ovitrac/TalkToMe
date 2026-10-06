@@ -1,19 +1,21 @@
 # DECISIONS — TalkToMe decision registry
 
 **Author:** Olivier Vitrac, PhD, HDR — Adservio Innovation Lab — Adservio Group — olivier.vitrac@adservio.fr
-**Created:** 2026-10-06 · rules in `CLAUDE.md` §6 (append-only; ids never reused; only the lead changes a status;
-every closed row carries ≥ 1 evidence pointer)
+**Created:** 2026-10-06 · append-only; ids never reused; only the lead changes a status, and a change appends a
+dated note; every closed row carries ≥ 1 evidence pointer
 
 **Status vocabulary:** `open · proposed · closed · superseded · rejected`
 
 | ID | Subject | Status | Evidence / notes |
 |---|---|---|---|
-| D-0001 | Sole human authorship; no machine attribution anywhere (commits, PRs, metadata, docs) | closed | Lead's ruling 2026-10-06: *"authorship is imperative, no machine attribution at all"*. `CLAUDE.md` §0.1 |
-| D-0002 | Conda env `talktome`, Python 3.11, cloned from the validated TTS env `video-tts` | closed | Lead's ruling 2026-10-06: *"you need a cloned env"*. Created 2026-10-06: Python 3.11.16, onnxruntime 1.30.0. `CLAUDE.md` §0.2 |
-| D-0003 | Integration surface: hooks for event alerts + skill for deliberate messages and settings; packaged as a Claude Code plugin | open | Proposal of 2026-10-06 (session discussion); not yet ruled |
-| D-0004 | License MIT; public repository `ovitrac/TalkToMe`; default branch `main` | closed | Lead's ruling 2026-10-06: *"MIT, repo ovitrac, ok git init -b main"*. `LICENSE` |
-| D-0005 | Message wording EN / FR | open | 2026-10-06: French register ruled — **tutoiement** (*"agree for 'tu'"*). Open: final EN wording; French for *landed* (*sont arrivés* / *sont tombés* / *sont prêts*) |
-| D-0006 | Session-naming resolution order (explicit name → agent name → working-directory basename) | open | Proposal of 2026-10-06 |
-| D-0007 | Event → message mapping and noise thresholds | open | 2026-10-06: quiet threshold ruled — *landed* is spoken only for turns ≥ **60 s** (*"ok for a quiet threshold of 60s"*). Open: the event mapping itself |
-| D-0008 | Registers (*useful* / *fun*) and mood presets; who chooses the mood (event default, Claude via skill, lead override) | open | Request of 2026-10-06. Kokoro has no emotion control (probe in `CLAUDE.md` §0.3); levers: wording, speed, voice / blend, pitch, earcon |
-| D-0009 | Public / private boundary: client and private-project names, local paths and business context live only in the gitignored `CLAUDE.local.md`; staged diffs checked against its deny-list | proposed | Raised 2026-10-06 when the repository was ruled public (D-0004). `CLAUDE.md` §0.0 |
+| D-0001 | Sole human authorship; no machine attribution anywhere (commits, PRs, metadata, docs) | closed | Lead's ruling 2026-10-06: *"authorship is imperative, no machine attribution at all"* |
+| D-0002 | Conda env `talktome`, Python 3.11, cloned from the validated TTS env `video-tts` | closed | Lead's ruling 2026-10-06: *"you need a cloned env"*. Created 2026-10-06: Python 3.11.16, onnxruntime 1.30.0 |
+| D-0003 | Integration surface: hooks for event alerts + skill for deliberate messages and settings; packaged as a Claude Code plugin | closed | Proposal of 2026-10-06. 2026-10-06: ruled — hooks + skill *"good to have"*, plugin packaging retained. Design: `base/DESIGN_TALKTOME_20261006.md` |
+| D-0004 | License MIT; public repository `ovitrac/TalkToMe`; default branch `main` | closed | Lead's ruling 2026-10-06: *"MIT, repo ovitrac, ok git init -b main"*. `LICENSE`; commit `91f576b` |
+| D-0005 | Message wording EN / FR | closed | 2026-10-06: French register — **tutoiement** (*"agree for 'tu'"*). 2026-10-06: wording delegated to Claude (*"it is the vocabulary of Claude not mine, u can judge"*); English keeps *landed*; French *useful* renders it **"sont déposés"** (the lead's vocabulary: *produits / codés / déposés*). Templates: design §4 |
+| D-0006 | Session naming | closed | 2026-10-06: *"keep simple and tunable"* — name given to the session, else the working-directory basename; per-user respelling map |
+| D-0007 | Event → message mapping and noise thresholds | proposed | 2026-10-06: quiet threshold ruled — *landed* only for turns ≥ **60 s** (*"ok for a quiet threshold of 60s"*). Mapping, debounce and cooldown: design §3 |
+| D-0008 | Registers and moods | proposed | 2026-10-06: **two registers**, *useful* and *fun*; *"let Claude decide to create variations and natural"*. Default mood per class, Claude may choose another through the skill: design §5 |
+| D-0009 | Public / private boundary through a gitignored companion file | superseded | Raised 2026-10-06 when the repository was ruled public. 2026-10-06: superseded by D-0010 |
+| D-0010 | `CLAUDE.md` is standalone and private (gitignored); tracked files carry no personal paths, private configuration or business context | closed | Lead's ruling 2026-10-06: *"make a CLAUDE.md independent … gitignore CLAUDE.md"* |
+| D-0011 | No pre-commit hook for this repository | closed | Lead's ruling 2026-10-06: *"no (if yes, it would be only for this project)"* |
