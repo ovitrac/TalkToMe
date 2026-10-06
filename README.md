@@ -5,7 +5,8 @@ and mood.
 
 > *"Hi Olivier, I need your help on…"* · *"The results of [THIS SESSION] landed."*
 
-**Status:** bootstrap — design under discussion (`base/DECISIONS.md`). Nothing to install yet.
+**Status:** v0.1 in development — speech and command line work (`talktome say`, `test`, `doctor`); the Claude
+Code hooks and plugin come next. Design: `base/DESIGN_TALKTOME_20261006.md`; decisions: `base/DECISIONS.md`.
 
 ## Intent
 
