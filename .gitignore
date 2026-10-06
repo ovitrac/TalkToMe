@@ -1,0 +1,39 @@
+# Private companion contract (public / private boundary, CLAUDE.md §0.0)
+CLAUDE.local.md
+.claude/settings.local.json
+
+# Model files, rendered audio, logs, caches (CLAUDE.md §0.3, §3.4)
+models/
+*.onnx
+*.bin
+*.wav
+*.mp3
+*.ogg
+*.flac
+*.jsonl
+cache/
+logs/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Editors and OS
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Secrets
+.env
+secrets.json
+credentials.json
+*.pem
+*.key
