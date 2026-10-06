@@ -1,0 +1,80 @@
+# TalkToMe message catalogue (design §4) — schema talktome-catalog/1
+# Author: Olivier Vitrac, PhD, HDR — Adservio Innovation Lab — Adservio Group — olivier.vitrac@adservio.fr
+#
+# Placeholders: {session} (required) and {name} (optional, at most once; removed with its comma when empty).
+# useful: exactly one sober sentence per class. fun: rotating variations, never the same twice in a row.
+# French uses tutoiement. Users override any list under "templates" in their configuration.
+
+schema = "talktome-catalog/1"
+
+[useful.en]
+help = ["{name}, {session} needs your help."]
+attention = ["{name}, {session} needs your attention."]
+input = ["{name}, {session} needs your input."]
+landed = ["{name}, the results of {session} landed."]
+
+[useful.fr]
+help = ["{name}, {session} a besoin de ton aide."]
+attention = ["{name}, {session} a besoin de ton attention."]
+input = ["{name}, {session} attend ta réponse."]
+landed = ["{name}, les résultats de {session} sont déposés."]
+
+[fun.en]
+help = [
+  "Psst, {name}. {session} has a question only you can answer.",
+  "{name}, {session} is standing at a fork in the road. Your call.",
+  "{session} raises a hand, {name}. Help wanted.",
+  "{name}, {session} would like a human opinion before going further.",
+  "Quick one, {name}: {session} needs you to decide.",
+]
+attention = [
+  "Knock knock, {name}. {session} needs your green light.",
+  "{name}, {session} is waiting at the door for your approval.",
+  "Excuse me, {name}: {session} needs your signature.",
+  "{session} is holding its breath, {name}. Permission, please?",
+  "{name}, one click from you and {session} is back on its way.",
+]
+input = [
+  "Your move, {name}. {session} is waiting.",
+  "{session} is all ears, {name}.",
+  "{name}, {session} has said its piece. Over to you.",
+  "Whenever you're ready, {name}, {session} is listening.",
+  "{session} is twiddling its thumbs, {name}.",
+]
+landed = [
+  "Ta-da! {session} has delivered, {name}.",
+  "{name}, fresh results from {session}, still warm.",
+  "Mission complete for {session}. Come and see, {name}.",
+  "{session} has landed its work on your desk, {name}.",
+  "Good news, {name}: {session} is done.",
+]
+
+[fun.fr]
+help = [
+  "Psst, {name} ! {session} a une question pour toi.",
+  "{name}, {session} hésite à la croisée des chemins. À toi de trancher.",
+  "{session} lève la main, {name}. On a besoin de toi.",
+  "{name}, {session} aimerait ton avis avant d'aller plus loin.",
+  "Une petite décision, {name} : {session} compte sur toi.",
+]
+attention = [
+  "Toc toc, {name} ! {session} attend ton feu vert.",
+  "{name}, {session} patiente à la porte. Tu autorises ?",
+  "Pardon de te déranger, {name} : {session} a besoin de ta signature.",
+  "{session} retient son souffle, {name}. Une autorisation, s'il te plaît ?",
+  "{name}, un clic de ta part et {session} repart.",
+]
+input = [
+  "À toi de jouer, {name}. {session} t'attend.",
+  "{session} est tout ouïe, {name}.",
+  "{name}, {session} a fini. La parole est à toi.",
+  "Quand tu veux, {name}, {session} t'écoute.",
+  "{session} se tourne les pouces, {name}.",
+]
+landed = [
+  "Et voilà ! {session} a livré, {name}.",
+  "{name}, les résultats de {session} sont servis, encore chauds.",
+  "Mission accomplie pour {session}. Viens voir, {name} !",
+  "{session} a déposé son travail sur ton bureau, {name}.",
+  "Bonne nouvelle, {name} : {session} a terminé.",
+]

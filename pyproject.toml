@@ -1,0 +1,49 @@
+# TalkToMe — conda env: talktome (Python 3.11). This file is the single source of truth for dependencies.
+# Author: Olivier Vitrac, PhD, HDR — Adservio Innovation Lab — Adservio Group — olivier.vitrac@adservio.fr
+
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "talktome"
+version = "0.1.0.dev0"
+description = "Spoken alerts from concurrent Claude Code sessions: local TTS, English or French, configurable voice and mood."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Olivier Vitrac", email = "olivier.vitrac@adservio.fr" }]
+requires-python = ">=3.11"
+dependencies = [
+  "kokoro-onnx>=0.6.1",
+  "numpy>=2.0",
+  "soundfile>=0.14",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "mypy>=1.10", "black>=24", "isort>=5", "flake8>=7"]
+
+[project.scripts]
+talktome = "talktome.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+talktome = ["catalog.toml"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.black]
+line-length = 110
+target-version = ["py311"]
+
+[tool.isort]
+profile = "black"
+line_length = 110
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+ignore_missing_imports = true
