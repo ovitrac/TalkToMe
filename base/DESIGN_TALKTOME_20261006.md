@@ -240,7 +240,6 @@ the lock; `log.jsonl`) and audio in `~/.cache/talktome/`.
 ## 8. Plugin and skill
 
 ```text
-.claude-plugin/marketplace.json        # the repository is its own marketplace
 plugin/
 ├── .claude-plugin/plugin.json
 ├── hooks/hooks.json                   # UserPromptSubmit, PreToolUse, Notification, Stop → "talktome hook"
@@ -259,7 +258,8 @@ plugin/
 - **Install (two steps).**
   1. Python package: `pipx install git+https://github.com/ovitrac/TalkToMe`, or `pip install -e .` in an env,
      then `talktome setup`.
-  2. Plugin: `/plugin marketplace add ovitrac/TalkToMe`, then `/plugin install talktome@talktome`.
+  2. Plugin, from the **adservio** marketplace (D-0015): `/plugin marketplace add ovitrac/AdservioToolbox`, then
+     `/plugin install talktome@adservio` (alone) or `adservio-toolbox@adservio` (with the other Adservio tools).
 
 ## 9. Repository layout
 
@@ -279,7 +279,7 @@ TalkToMe/
 │   ├── engine.py     # Kokoro (model check, voices, blend, pitch), spd-say fallback
 │   ├── earcon.py     # numpy chimes
 │   └── player.py     # pw-play → paplay → aplay → ffplay → mpv
-├── plugin/ …  .claude-plugin/marketplace.json
+├── plugin/ …                            # listed in the adservio marketplace (ovitrac/AdservioToolbox)
 ├── tests/
 └── base/
 ```

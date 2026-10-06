@@ -9,6 +9,12 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Removed
+
+- Standalone marketplace manifest (`.claude-plugin/marketplace.json`): TalkToMe is distributed through the
+  **adservio** marketplace (`/plugin marketplace add ovitrac/AdservioToolbox`, then
+  `/plugin install talktome@adservio`).
+
 ## [0.1.0] — 2026-10-06
 
 First release.
