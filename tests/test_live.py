@@ -1,6 +1,9 @@
-"""T6 (live, opt-in): Kokoro renders English and French; the pitch shift keeps the duration and moves f0.
+"""T6 (live, opt-in): Kokoro renders every built-in language; the pitch shift keeps the duration and moves
+f0; Piper renders the downloaded packs.
 
-Run with TALKTOME_LIVE=1 and TALKTOME_MODELS_DIR=<directory with the Kokoro model files>. Nothing is played.
+Run with TALKTOME_LIVE=1 and TALKTOME_MODELS_DIR=<directory with the Kokoro model files>; the Piper tests
+also need `piper-tts` and the voices (TALKTOME_PIPER_DIR, default ~/.local/share/talktome/piper).
+Nothing is played.
 
 Author: Olivier Vitrac, PhD, HDR — Adservio Innovation Lab — Adservio Group — olivier.vitrac@adservio.fr
 License: MIT
@@ -49,7 +52,7 @@ def f0_median(y: np.ndarray, sr: int = engine.SR) -> float:
     return float(np.median(f0))
 
 
-@pytest.mark.parametrize("code", langs.codes())
+@pytest.mark.parametrize("code", [c for c in langs.codes() if langs.engine(c) == "kokoro"])
 def test_every_language_renders(kokoro: engine.Kokoro, code: str) -> None:
     from talktome import catalog
 
@@ -74,3 +77,26 @@ def test_pitch_shift_keeps_duration_and_moves_f0(kokoro: engine.Kokoro, semitone
     y1 = kokoro.synth(text, "bm_george", 1.0, semitones, "en-gb")
     assert len(y1) / len(y0) == pytest.approx(1.0, rel=0.05)
     assert f0_median(y1) / f0_median(y0) == pytest.approx(engine.shift_factor(semitones), rel=0.04)
+
+
+PIPER_DIR = Path(os.environ.get("TALKTOME_PIPER_DIR", "~/.local/share/talktome/piper")).expanduser()
+
+
+@pytest.mark.parametrize("code", [c for c in langs.codes() if langs.engine(c) == "piper"])
+@pytest.mark.parametrize("g", ["f", "m"])
+def test_piper_renders(code: str, g: str) -> None:
+    from talktome import catalog, voicepacks
+
+    pytest.importorskip("piper")
+    v = langs.voice(code, g)
+    model, cfg = PIPER_DIR / f"{v}.onnx", PIPER_DIR / f"{v}.onnx.json"
+    if not model.is_file():
+        pytest.skip(f"{v} not downloaded (talktome lang add {code})")
+    text = catalog.substitute(catalog.builtin(code, "useful", "landed")[0], "Ada", "Merlin", g, code)
+    piper = engine.Piper(model, cfg, floor=voicepacks.length_floor(code, v))
+    y = piper.synth(text, 1.0, 0.0)
+    assert 1.0 < len(y) / engine.SR < 8.0 and float(np.max(np.abs(y))) > 0.05
+    # Piper's duration noise spreads single renderings by ±5 % (2026-10-06): compare means of six
+    normal = np.mean([len(piper.synth(text, 1.0, 0.0)) for _ in range(6)])
+    fast = np.mean([len(piper.synth(text, 1.5, 0.0)) for _ in range(6)])
+    assert fast / normal == pytest.approx(1 / 1.5, rel=0.10)

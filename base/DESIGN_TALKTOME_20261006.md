@@ -247,7 +247,8 @@ the lock; `log.jsonl`) and audio in `~/.cache/talktome/`.
 | `talktome mode [on\|discreet\|off\|auto]` | show or set the current session's mode (§5.2) |
 | `talktome joke` / `talktome fact` / `talktome why [N]` | a joke, a surprising fact, an answer to "why?" (§7.1) |
 | `talktome set KEY VALUE` / `talktome show` | settings (`set language fr`, `set register fun`, `set voices.en bf_emma`, `set name Olivier`) |
-| `talktome voices [--lang en\|fr]` | list voices |
+| `talktome voices [--lang CODE]` | list voices (a Piper pack: its voices, license, downloaded or not) |
+| `talktome lang [list \| add CODE \| remove CODE [--purge]]` | language packs; `add` downloads a Piper pack's voices (§7.3) |
 | `talktome mute [MINUTES]` / `talktome unmute` | silence |
 | `talktome test [--class C] [--mood M]` | speak a sample, on request only |
 | `talktome doctor` | models (SHA-256), player, config, `PATH` link, last log lines |
@@ -277,7 +278,55 @@ the configuration (`languages`); a pack is parsed only when its language is used
 | hi, zh | experimental, default | hi, cmn | plausible phonemes; not reviewed by native speakers |
 | ja | excluded | — | kanji and katakana read as "Japanese letter" / "Chinese letter"; needs an extra phonemizer |
 
-German and other languages come as Piper packs, downloaded on `talktome lang add` (D-0020, next release).
+German and other languages come as Piper packs, downloaded on `talktome lang add` (D-0020, §7.3).
+
+### 7.3 Downloadable packs: Piper (D-0020, D-0022)
+
+A pack with `engine = "piper"` speaks with [Piper](https://github.com/OHF-Voice/piper1-gpl) voices, which are
+not shipped: `talktome lang add CODE` downloads them, then lists the language as installed. The engine,
+`piper-tts` (GPL-3.0), is an **optional** dependency the user installs (`pipx inject talktome piper-tts`, or the
+extra `talktome[piper]`); it is never vendored, and TalkToMe stays MIT. Without it, `lang add` refuses with the
+command to run.
+
+**Pinning.** The pack names each voice's two files (ONNX model, JSON configuration) by path, size and SHA-256,
+under a fixed revision of the voice repository (`rhasspy/piper-voices`, tag `v1.0.0`). A file is downloaded to
+`<name>.part`, checked, and renamed only if both size and SHA-256 match; a failed download installs nothing.
+Voices live in `~/.local/share/talktome/piper/`. Before each rendering, `voicepacks.fingerprint` hashes the files
+once, then trusts (path, size, mtime) until they change, as for Kokoro; the fingerprint, which includes the
+voice's duration floor, enters the cache key. `doctor` re-hashes every installed voice.
+`lang remove CODE --purge` deletes the files; without `--purge` they are kept.
+
+**Voices: CC0 only (D-0022, proposed).** German: `de_DE-thorsten-medium` (m, Thorsten-Voice dataset, CC0) and
+`de_DE-kerstin-low` (f, CC0). Voices trained on M-AILABS, or under CC-BY or non-commercial terms, are left out:
+the user's audio must carry no attribution or usage condition.
+
+**Same audio contract as Kokoro.** Output is resampled (linear) from 22.05 kHz or 16 kHz to 24 kHz, then
+pitch-shifted, so earcons, volume, moods and the cache are unchanged.
+
+**Speed (measured 2026-10-06).** Piper's `length_scale` does not scale durations proportionally: each phoneme is
+rounded up to whole frames, a share that does not shrink. Fits of the total duration $D$ over four German
+sentences (27–104 characters) at $\ell \in \{0.5, 0.75, 1, 1.5, 2\}$, four renderings each, give
+
+$$
+D(\ell) \approx b\,(\ell + f), \qquad f_{\text{thorsten}} \in [0.38, 0.52],\quad f_{\text{kerstin}} \in [0.58, 0.80],
+$$
+
+with residuals ≤ 0.22 s. The pack stores each voice's mean $f$ (`length_floor`: 0.46 and 0.68); a speed $s$
+uses
+
+$$
+\ell(s) = \frac{\ell_0 + f}{s} - f, \qquad \ell \geq 0.2,
+$$
+
+where $\ell_0$ is the voice's own length scale. Measured speed (mean of four renderings, four sentences):
+asked 0.85 → 0.86 / 0.83, 1.2 → 1.18 / 1.19, 1.5 → 1.52 / 1.45 (thorsten / kerstin); without the floor, 1.5 gave
+1.14–1.20. Piper samples its durations: single renderings of the same sentence vary by about ±5 %, so the audio is
+not byte-reproducible (the cache keeps the first rendering).
+
+**Phonemes.** `piper-tts` 1.8 decomposes phonemes (Unicode NFD): German *ich*-laut `ç` becomes `c` + U+0327.
+`kerstin` knows `ç` but not the combining cedilla, so *nicht* was spoken *nict*. The engine recomposes a base
+and a combining mark when the voice knows the composed form and not the mark (`engine.recompose`); every text of
+the German pack then maps to known phonemes with both voices (checked 2026-10-06).
 
 ## 8. Plugin and skill
 
@@ -320,7 +369,8 @@ TalkToMe/
 │   ├── config.py     # schema, defaults, validation, set/show
 │   ├── state.py      # per-session state files
 │   ├── worker.py     # lock → cache → render → play → log
-│   ├── engine.py     # Kokoro (model check, voices, blend, pitch), spd-say fallback
+│   ├── engine.py     # Kokoro (voices, blend), Piper (speed floor, phonemes), resampling, pitch
+│   ├── voicepacks.py # Piper packs: pinned voices, verified download, fingerprint (§7.3)
 │   ├── earcon.py     # numpy chimes
 │   └── player.py     # pw-play → paplay → aplay → ffplay → mpv
 ├── plugin/ …                            # listed in the adservio marketplace (ovitrac/AdservioToolbox)
@@ -337,7 +387,8 @@ TalkToMe/
 | T3 | the hook never interferes | stdout non-empty, exit ≠ 0 on malformed or empty stdin, missing config or missing models, or median wall time ≥ 100 ms over 50 runs |
 | T4 | speech is serialized | two concurrent workers with a fake player produce overlapping play intervals |
 | T5 | the cache is keyed correctly | changing text, voice, speed, pitch, language or model does not change the key, or a repeat misses |
-| T6 (live, `TALKTOME_LIVE=1`) | Kokoro renders EN and FR; the pitch shift preserves duration within 5 % | either fails |
+| T6 (live, `TALKTOME_LIVE=1`) | Kokoro renders every built-in pack; the pitch shift preserves duration within 5 %; Piper renders each downloaded voice, and speed 1.5 shortens the mean of six renderings to 1/1.5 within 10 % | any fails |
+| T7 | a Piper pack installs only verified voices | a file of another size or SHA-256 is kept, a `.part` file remains, `lang add` succeeds without the engine, or a failed download lists the language as installed |
 
 ## 11. Milestones
 

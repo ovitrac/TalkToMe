@@ -43,6 +43,11 @@ def pack(code: str) -> dict[str, Any]:
     return d
 
 
+def engine(code: str) -> str:
+    """`kokoro` (built in) or `piper` (voices downloaded by `talktome lang add`, design §7.3)."""
+    return str(pack(code).get("engine", "kokoro"))
+
+
 def kokoro_lang(code: str, voice: str) -> str:
     """Phonemizer language for Kokoro; English follows the voice (a* en-us, b* en-gb)."""
     k = str(pack(code)["kokoro"]["lang"])

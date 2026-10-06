@@ -43,10 +43,10 @@ Run the matching command, then report the result in one line.
 
 | Arguments | Command |
 |---|---|
-| `en`, `fr`, `es`, `pt`, `it`, `hi`, `zh` | `talktome set language CODE` (an installed language; see `talktome lang`) |
-| `lang`, `lang add CODE`, `lang remove CODE` | `talktome lang`, `talktome lang add CODE`, `talktome lang remove CODE` |
+| `en`, `fr`, `es`, `pt`, `it`, `hi`, `zh`, `de` | `talktome set language CODE` (an installed language; see `talktome lang`) |
+| `lang`, `lang add CODE`, `lang remove CODE` | `talktome lang`, `talktome lang add CODE`, `talktome lang remove CODE` — `add de` downloads 126 MB of voices: confirm with the user first; if Piper is missing, relay the install command it prints |
 | `useful`, `fun` | `talktome set register useful` (or `fun`) |
-| `voice NAME` | `talktome set voices.LANG.G NAME` (current language; G = the voice's gender, second letter of its name: `bf_emma` → f, `bm_lewis` → m); list: `talktome voices --lang LANG` |
+| `voice NAME` | `talktome set voices.LANG.G NAME` (current language; G = the voice's gender: second letter of a Kokoro name, `bf_emma` → f, `bm_lewis` → m; for a Piper voice such as `de_DE-kerstin-low`, the gender `talktome voices --lang LANG` shows) |
 | `speed X` | `talktome set speed.LANG X` with the current language (0.5–2.0) |
 | `mood CLASS MOOD` | `talktome set moods.CLASS MOOD` (classes: help, attention, input, landed) |
 | `name TEXT` | `talktome name "TEXT" --gender f\|m` — this session's spoken name (see below) |

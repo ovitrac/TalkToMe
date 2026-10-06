@@ -127,9 +127,11 @@ def _voice_and_pitch(
         h = zlib.crc32(session.encode("utf-8"))
         if langs.distinct_voices(lang) <= 1:  # one voice (French): sessions differ by pitch
             pitch += FR_PITCH_OFFSETS[h % len(FR_PITCH_OFFSETS)]
-        else:  # a voice of the session's gender: second letter of a Kokoro name (bf_, bm_, ef_, em_…)
-            candidates = cfg["fun"]["voice_pool"] if lang == "en" else langs.pool(lang, sex)
-            pool = [v for v in candidates if v[1] == sex] or [voice]
+        else:  # a voice of the session's gender: the pack's pool, or the English pool by its Kokoro names
+            if lang == "en":  # second letter of a Kokoro name: bf_ → f, bm_ → m
+                pool = [v for v in cfg["fun"]["voice_pool"] if v[1] == sex] or [voice]
+            else:
+                pool = langs.pool(lang, sex) or [voice]
             voice = pool[h % len(pool)]
     return voice, max(-PITCH_LIMIT, min(PITCH_LIMIT, pitch))
 

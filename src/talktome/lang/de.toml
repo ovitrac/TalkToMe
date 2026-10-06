@@ -1,0 +1,145 @@
+# TalkToMe language pack — German (schema talktome-lang/1). Duzen. Voices: Piper, downloaded on `lang add de`.
+# Author: Olivier Vitrac, PhD, HDR — Adservio Innovation Lab — Adservio Group — olivier.vitrac@adservio.fr
+
+schema = "talktome-lang/1"
+code = "de"
+name = "Deutsch"
+status = "stable"
+default = false
+engine = "piper"
+
+[piper]
+base_url = "https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/"
+
+# length_floor: duration D(ls) ≈ b·(ls + floor), per-voice mean of fits on four sentences at length scales
+# 0.5–2 (2026-10-06; thorsten 0.38–0.52, kerstin 0.58–0.80). It keeps `speed` close to the requested rate.
+
+[piper.voices.de_DE-thorsten-medium]
+gender = "m"
+length_floor = 0.46
+path = "de/de_DE/thorsten/medium/de_DE-thorsten-medium"
+license = "CC0 (Thorsten-Voice dataset)"
+onnx = { size = 63201294, sha256 = "7e64762d8e5118bb578f2eea6207e1a35a8e0c30595010b666f983fc87bb7819" }
+json = { size = 4819, sha256 = "974adee790533adb273a1ac88f49027d2a1b8f0f2cf4905954a4791e79264e85" }
+
+[piper.voices.de_DE-kerstin-low]
+gender = "f"
+length_floor = 0.68
+path = "de/de_DE/kerstin/low/de_DE-kerstin-low"
+license = "CC0 (dataset-voice-kerstin)"
+onnx = { size = 63104526, sha256 = "d352a7641892cebf2903859af94e9ba81a141110215fe3943bcda7f7da401b7a" }
+json = { size = 4158, sha256 = "56e708556b7b9b7a53c4f8957e021421e69f11a600962bba554cffbe72cf2d47" }
+
+[voices]
+f = "de_DE-kerstin-low"
+m = "de_DE-thorsten-medium"
+pool_f = ["de_DE-kerstin-low"]
+pool_m = ["de_DE-thorsten-medium"]
+
+[words]
+fallback_session = "diese Sitzung"
+discreet_session = "eine Sitzung"
+his = { m = "seine", f = "ihre" }   # only before a feminine noun (seine/ihre Arbeit)
+
+[grammar]
+articles = { die = "f", eine = "f", der = "m", ein = "m" }
+skip = ["das", "den", "dem", "des"]
+plural = []
+elision = []
+contractions = []
+
+[templates.useful]
+help = ["{name}, {session} braucht deine Hilfe."]
+attention = ["{name}, {session} braucht deine Aufmerksamkeit."]
+input = ["{name}, {session} wartet auf deine Antwort."]
+landed = ["{name}, die Ergebnisse von {session} sind da."]
+
+[templates.fun]
+help = [
+  "Psst, {name}. {session} hat eine Frage, die nur du beantworten kannst.",
+  "{name}, {session} steht an einer Weggabelung. Du entscheidest.",
+  "{session} hebt die Hand, {name}. Hilfe gesucht.",
+  "{name}, {session} hätte gern eine menschliche Meinung, bevor es weitergeht.",
+  "Kurze Frage, {name}: {session} braucht deine Entscheidung.",
+]
+attention = [
+  "Klopf, klopf, {name}. {session} wartet auf dein grünes Licht.",
+  "{name}, {session} wartet an der Tür auf deine Freigabe.",
+  "Entschuldige, {name}: {session} braucht deine Unterschrift.",
+  "{session} hält die Luft an, {name}. Darf ich?",
+  "{name}, ein Klick von dir und {session} legt wieder los.",
+]
+input = [
+  "Du bist dran, {name}. {session} wartet.",
+  "{session} ist ganz Ohr, {name}.",
+  "{name}, {session} hat alles gesagt. Jetzt du.",
+  "Wann immer du bereit bist, {name}, {session} hört zu.",
+  "{session} dreht Däumchen, {name}.",
+]
+landed = [
+  "Tadaa! {session} hat geliefert, {name}.",
+  "{name}, frische Ergebnisse von {session}, noch warm.",
+  "Mission erfüllt für {session}. Komm schauen, {name}.",
+  "{session} hat {his} Arbeit auf deinen Schreibtisch gelegt, {name}.",
+  "Gute Nachricht, {name}: {session} ist fertig.",
+]
+
+[joke]
+items = [
+  "Was ist orange und läuft durch den Wald? Eine Wanderine.",
+  "Was sitzt auf dem Baum und schreit Aha? Ein Uhu mit Sprachfehler.",
+  "Treffen sich zwei Magnete. Sagt der eine: Was soll ich heute bloß anziehen?",
+  "Was macht ein Pirat am Computer? Er drückt die Enter-Taste.",
+  "Wie viele Programmierer braucht man, um eine Glühbirne zu wechseln? Keinen, das ist ein Hardwareproblem.",
+  "Warum können Seeräuber keine Kreise berechnen? Weil sie Pi raten.",
+  "Was ist grün und klopft an die Tür? Ein Klopfsalat.",
+  "Was ist weiß und stört beim Essen? Eine Lawine.",
+  "Was sagt der große Stift zum kleinen Stift? Wachs mal, Stift!",
+  "Warum ist das Mathebuch traurig? Weil es so viele Probleme hat.",
+  "Was ist ein Keks unter einem Baum? Ein schattiges Plätzchen.",
+  "Wie nennt man einen Bumerang, der nicht zurückkommt? Einen Stock.",
+]
+
+[fact]
+items = [
+  "Wusstest du? Kraken haben drei Herzen und blaues Blut.",
+  "Wusstest du? Auf der Venus dauert ein Tag länger als ein Jahr.",
+  "Wusstest du? Bananen sind leicht radioaktiv, wegen des Kaliums, das sie enthalten.",
+  "Wusstest du? Es gibt mehr Bäume auf der Erde als Sterne in der Milchstraße.",
+  "Wusstest du? Kleopatra lebte zeitlich näher an uns als am Bau der Cheops-Pyramide.",
+  "Wusstest du? Wombats machen würfelförmigen Kot.",
+  "Wusstest du? Die Universität Oxford ist älter als das Aztekenreich.",
+  "Wusstest du? Ein Blitz ist etwa fünfmal heißer als die Oberfläche der Sonne.",
+  "Wusstest du? Seeotter halten sich beim Schlafen an den Pfoten, damit sie nicht auseinandertreiben.",
+  "Wusstest du? Neunzehnhundertsiebenundvierzig wurde eine echte Motte, die in einem Relais des Harvard Mark Zwei steckte, als erster echter Bug protokolliert.",
+  "Wusstest du? Ausgerollt ist die DNA einer einzigen menschlichen Zelle etwa zwei Meter lang.",
+  "Wusstest du? Flamingos sind rosa wegen der Farbstoffe in ihrer Nahrung.",
+  "Wusstest du? Das Licht der Sonne braucht etwa acht Minuten und zwanzig Sekunden bis zu uns.",
+  "Wusstest du? Das Nationaltier Schottlands ist das Einhorn.",
+  "Wusstest du? Das Herz einer Garnele liegt in ihrem Kopf.",
+]
+
+[why]
+special = [
+  "Warum nicht?",
+  "Frag nicht.",
+  "Weil die Tests es sagen.",
+  "Damals schien es eine gute Idee.",
+  "Frag den Compiler.",
+  "Steht im Lastenheft.",
+  "Aus historischen Gründen.",
+  "Auf meinem Rechner läuft es.",
+  "Kein Kommentar.",
+  "Weil Freitag ist.",
+]
+names = ["Ada", "Alan", "Grace", "Linus", "Margaret", "Dennis", "Barbara", "Edsger", "Frances", "Donald"]
+# weak declension after der/die, nominative: the same form for both genders
+adjectives = ["müde", "brillante", "nervöse", "pensionierte", "geheimnisvolle", "besorgte", "großzügige", "sture", "erschöpfte", "aufgedrehte"]
+nouns = [
+  ["Ingenieur", "m"], ["Mathematikerin", "f"], ["Praktikant", "m"], ["Projektleiterin", "f"], ["Hamster", "m"],
+  ["Compiler", "m"], ["Architektin", "f"], ["Kundin", "f"], ["Prüfer", "m"], ["Roboter", "m"],
+]
+verbs = ["wollte", "verlangt hat", "genehmigt hat", "vorgeschlagen hat", "gefordert hat", "sich gewünscht hat", "durchgesetzt hat", "angeordnet hat"]
+articles = { m = "der", f = "die" }
+np = "{art} {adj} {noun}"
+patterns = ["Weil {subject} es {verb}.", "Damit {np} zufrieden ist.", "{subject} hat darauf bestanden."]

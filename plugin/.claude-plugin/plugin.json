@@ -1,7 +1,7 @@
 {
   "name": "talktome",
-  "version": "0.3.0",
-  "description": "Your Claude Code sessions call you by voice when they need your help, your attention or your input, or when a long turn has finished. Local text-to-speech in English, French, Spanish, Portuguese, Italian (Hindi, Mandarin experimental); voice and mood configurable.",
+  "version": "0.4.0",
+  "description": "Your Claude Code sessions call you by voice when they need your help, your attention or your input, or when a long turn has finished. Local text-to-speech in English, French, Spanish, Portuguese, Italian (Hindi, Mandarin experimental), German as a download; voice and mood configurable.",
   "author": {
     "name": "Olivier Vitrac",
     "email": "olivier.vitrac@adservio.fr"
@@ -9,5 +9,5 @@
   "homepage": "https://github.com/ovitrac/TalkToMe",
   "repository": "https://github.com/ovitrac/TalkToMe",
   "license": "MIT",
-  "keywords": ["voice", "text-to-speech", "notifications", "multi-session", "kokoro"]
+  "keywords": ["voice", "text-to-speech", "notifications", "multi-session", "kokoro", "piper"]
 }

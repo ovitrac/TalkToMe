@@ -229,6 +229,13 @@ def cmd_voices(a: argparse.Namespace) -> int:
         return 2
     from . import engine, models
 
+    if a.lang and langs.engine(a.lang) == "piper":
+        from . import voicepacks
+
+        for name, info in voicepacks.voices(a.lang).items():
+            here = "downloaded" if voicepacks.paths_of(name)[0].is_file() else "not downloaded"
+            print(f"{name}  ({info['gender']}, {info['license']}, {here})")
+        return 0
     d = models.resolve_dir(cfg)
     if d is None:
         return _err("no model directory configured (talktome setup)")
@@ -239,44 +246,82 @@ def cmd_voices(a: argparse.Namespace) -> int:
     return 0
 
 
+def _lang_add(code: str, cfg: dict[str, Any]) -> int:
+    """Install a pack; a Piper pack first downloads its voices (explicit network use, SHA-256 checked)."""
+    installed: list[str] = list(cfg["languages"])
+    if langs.engine(code) == "piper":
+        from . import models, voicepacks
+
+        if not voicepacks.engine_available():
+            return _err(f"{code} speaks with Piper, which is not installed:\n  {voicepacks.INSTALL_HINT}")
+        todo = voicepacks.missing(code)
+        if todo:
+            size = sum(f[2] for f in todo) / 1e6
+            print(f"{code}: {len(todo)} voice files ({size:.0f} MB) into {voicepacks.voice_dir()}")
+            try:
+                voicepacks.download(code)
+            except (OSError, models.ModelError) as e:
+                return _err(f"download failed, nothing installed: {e}")
+            print(f"{code}: voices verified (SHA-256)")
+    if code in installed:
+        print(f"{code} is already installed")
+        return 0
+    cfg["languages"] = [*installed, code]
+    config.save(cfg)
+    print(f"{code} installed — `talktome set language {code}` to speak it")
+    return 0
+
+
+def _lang_remove(code: str, cfg: dict[str, Any], purge: bool) -> int:
+    installed: list[str] = list(cfg["languages"])
+    if code == cfg["language"]:
+        return _err(f"{code} is the language in use; switch first (`talktome set language en`)")
+    if code in installed:
+        cfg["languages"] = [c for c in installed if c != code]
+        config.save(cfg)
+        print(f"{code} removed")
+    else:
+        print(f"{code} is not installed")
+    if langs.engine(code) == "piper":
+        from . import voicepacks
+
+        if purge:
+            gone = voicepacks.remove(code)
+            print(f"{code}: {len(gone)} voice files deleted" if gone else f"{code}: no voice files to delete")
+        elif any(dest.is_file() for _, dest, _, _ in voicepacks.files(code)):
+            print(f"{code}: voices kept in {voicepacks.voice_dir()} (`talktome lang remove {code} --purge`)")
+    return 0
+
+
 def cmd_lang(a: argparse.Namespace) -> int:
-    """List, add or remove language packs (design §9)."""
+    """List, add or remove language packs (design §9, §7.3)."""
     cfg = _load(required=False)
     if cfg is None:
         return 2
     if a.action != "list" and not a.code:
         return _err(f"`talktome lang {a.action} CODE` (available: {', '.join(langs.codes())})")
-    installed: list[str] = list(cfg["languages"])
     if a.action == "list":
         for code in langs.codes():
             p, v = langs.pack(code), langs.pack(code)["voices"]
             state_ = (
-                "speaking" if code == cfg["language"] else "installed" if code in installed else "available"
+                "speaking"
+                if code == cfg["language"]
+                else "installed" if code in cfg["languages"] else "available"
             )
             status = "" if p["status"] == "stable" else f" ({p['status']})"
-            print(f"{code:3} {state_:9} {p['name']}{status} — {p['engine']}, voices {v['f']} / {v['m']}")
+            engine = p.get("engine", "kokoro")
+            if engine == "piper":
+                from . import voicepacks
+
+                left = voicepacks.missing(code)
+                engine += f", {sum(f[2] for f in left) / 1e6:.0f} MB to download" if left else ", downloaded"
+            print(f"{code:3} {state_:9} {p['name']}{status} — {engine}, voices {v['f']} / {v['m']}")
         return 0
     if a.code not in langs.codes():
         return _err(f"no language pack {a.code!r} (available: {', '.join(langs.codes())})")
     if a.action == "add":
-        if a.code in installed:
-            print(f"{a.code} is already installed")
-            return 0
-        if langs.pack(a.code)["engine"] != "kokoro":
-            return _err(f"{a.code} needs the {langs.pack(a.code)['engine']} engine, not available yet")
-        cfg["languages"] = [*installed, a.code]
-        config.save(cfg)
-        print(f"{a.code} installed — `talktome set language {a.code}` to speak it")
-        return 0
-    if a.code == cfg["language"]:
-        return _err(f"{a.code} is the language in use; switch first (`talktome set language en`)")
-    if a.code not in installed:
-        print(f"{a.code} is not installed")
-        return 0
-    cfg["languages"] = [c for c in installed if c != a.code]
-    config.save(cfg)
-    print(f"{a.code} removed")
-    return 0
+        return _lang_add(a.code, cfg)
+    return _lang_remove(a.code, cfg, a.purge)
 
 
 def cmd_mute(a: argparse.Namespace) -> int:
@@ -344,6 +389,8 @@ def cmd_doctor(a: argparse.Namespace) -> int:
                 "config",
                 f"{paths.config_file()} ({cfg['language']}, {cfg['register']}, {voice}{muted})",
             )
+            for err in config.voice_errors(cfg):
+                line(False, "voices", err)
         except config.ConfigError as e:
             line(False, "config", str(e))
     c = cfg or config.defaults()
@@ -364,6 +411,22 @@ def cmd_doctor(a: argparse.Namespace) -> int:
         line(True, "engine", "kokoro-onnx importable")
     except ImportError as e:
         line(False, "engine", f"kokoro-onnx not importable: {e}")
+    from . import voicepacks
+
+    piper_packs = [code for code in c["languages"] if langs.engine(code) == "piper"]
+    if piper_packs:
+        errors = (
+            [] if voicepacks.engine_available() else [f"piper-tts not importable — {voicepacks.INSTALL_HINT}"]
+        )
+        errors += [f"{code}: {err}" for code in piper_packs for err in voicepacks.verify(code)]
+        line(not errors, "piper", "; ".join(errors) or f"{', '.join(piper_packs)} — voices SHA-256 verified")
+    else:
+        found_piper = voicepacks.engine_available()
+        line(
+            True,
+            "piper",
+            "piper-tts importable" if found_piper else "not installed (optional: lang add de …)",
+        )
     argv = player.find(c["player"])
     line(argv is not None, "player", argv[0] if argv else f"none found for {c['player']!r}")
     line(
@@ -402,6 +465,8 @@ def cmd_setup(a: argparse.Namespace) -> int:
     if a.name is not None:
         cfg["name"] = a.name
     if a.language:
+        if langs.engine(a.language) == "piper" and a.language not in cfg["languages"]:
+            return _err(f"{a.language} downloads its voices first: `talktome lang add {a.language}`")
         cfg["language"] = a.language
         if a.language not in cfg["languages"]:
             cfg["languages"] = [*cfg["languages"], a.language]
@@ -501,9 +566,10 @@ def parser() -> argparse.ArgumentParser:
     s.add_argument("--lang", choices=langs.codes())
     s.set_defaults(func=cmd_voices)
 
-    s = sub.add_parser("lang", help="language packs: list, add CODE, remove CODE")
+    s = sub.add_parser("lang", help="language packs: list, add CODE (downloads Piper voices), remove CODE")
     s.add_argument("action", nargs="?", choices=("list", "add", "remove"), default="list")
     s.add_argument("code", nargs="?")
+    s.add_argument("--purge", action="store_true", help="remove: also delete the downloaded voices")
     s.set_defaults(func=cmd_lang)
 
     s = sub.add_parser("mute", help="silence TalkToMe (indefinitely, or for MINUTES)")

@@ -7,6 +7,7 @@ License: MIT
 from __future__ import annotations
 
 import random
+import re
 from typing import Any
 
 import pytest
@@ -15,9 +16,13 @@ from talktome import catalog, cli, config, gender, langs
 from talktome.decide import Event, decide
 from talktome.state import SessionState
 
+KOKORO = [c for c in langs.codes() if langs.engine(c) == "kokoro"]
+PIPER = [c for c in langs.codes() if langs.engine(c) == "piper"]
+
 
 def test_defaults() -> None:
-    assert set(langs.codes()) == {"en", "fr", "es", "pt", "it", "hi", "zh"}
+    assert set(langs.codes()) == {"en", "fr", "es", "pt", "it", "hi", "zh", "de"}
+    assert PIPER == ["de"] and not set(PIPER) & set(langs.DEFAULT_LANGUAGES)  # downloaded on request only
     assert [c for c in langs.codes() if langs.pack(c)["default"]] == sorted(langs.DEFAULT_LANGUAGES)
     assert config.defaults()["languages"] == list(langs.DEFAULT_LANGUAGES)
     assert {c for c in langs.codes() if langs.pack(c)["status"] == "experimental"} == {"hi", "zh"}
@@ -26,7 +31,7 @@ def test_defaults() -> None:
     )  # Kokoro's phonemizer reads kanji as "Japanese letter" (2026-10-06 probe)
 
 
-@pytest.mark.parametrize("code", langs.codes())
+@pytest.mark.parametrize("code", KOKORO)
 def test_pack_structure(code: str) -> None:
     p = langs.pack(code)
     assert p["engine"] == "kokoro" and p["kokoro"]["lang"]
@@ -37,6 +42,28 @@ def test_pack_structure(code: str) -> None:
             assert name[1] == g, f"{name} is not a {g} voice"  # bf_, em_, …
     if code != "fr":  # French has a single, female voice for everyone (D-0014)
         assert v["f"][1] == "f" and v["m"][1] == "m"
+    for key in ("fallback_session", "discreet_session"):
+        assert langs.word(code, key)
+    for cls in catalog.CLASSES:
+        assert catalog.builtin(code, "useful", cls)
+
+
+@pytest.mark.parametrize("code", PIPER)
+def test_piper_pack_structure(code: str) -> None:
+    """Voices pinned by size and SHA-256 at a fixed revision; defaults and pools are pack voices by gender."""
+    p = langs.pack(code)
+    assert p["engine"] == "piper" and "kokoro" not in p and not p["default"]
+    assert p["piper"]["base_url"].startswith("https://") and "/resolve/v" in p["piper"]["base_url"]
+    known = p["piper"]["voices"]
+    for name, info in known.items():
+        assert config._PIPER_VOICE.match(name) and info["gender"] in config.GENDERS
+        assert info["path"].endswith(name) and "CC0" in info["license"]
+        for key in ("onnx", "json"):
+            assert info[key]["size"] > 0 and re.fullmatch(r"[0-9a-f]{64}", info[key]["sha256"])
+    v = p["voices"]
+    for g in config.GENDERS:
+        assert known[v[g]]["gender"] == g
+        assert v[f"pool_{g}"] and all(known[name]["gender"] == g for name in v[f"pool_{g}"])
     for key in ("fallback_session", "discreet_session"):
         assert langs.word(code, key)
     for cls in catalog.CLASSES:
@@ -78,6 +105,8 @@ def test_discreet_in_every_language(code: str, cfg: dict[str, Any]) -> None:
         ("canción", "es", "f"),
         ("cidade", "pt", "f"),
         ("a session", "en", "f"),
+        ("die Maschine", "de", "f"),
+        ("der Motor", "de", "m"),
     ],
 )
 def test_gender_cues_per_language(name: str, lang: str, expected: str) -> None:

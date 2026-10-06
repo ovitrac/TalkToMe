@@ -5,8 +5,8 @@ and mood.
 
 > *"Hi Olivier, I need your help on…"* · *"The results of [THIS SESSION] landed."*
 
-**Status:** v0.3.0 — speech, command line, Claude Code hooks, plugin and `/talktome` skill, per-session modes,
-language packs. Design:
+**Status:** v0.4.0 — speech, command line, Claude Code hooks, plugin and `/talktome` skill, per-session modes,
+language packs, downloadable German. Design:
 `base/DESIGN_TALKTOME_20261006.md`; decisions: `base/DECISIONS.md`; changes: `CHANGELOG.md`.
 
 ## Intent
@@ -16,7 +16,8 @@ help, needs your attention, or has finished a long piece of work, and tells you 
 
 - Local-first: speech is synthesized on your machine (Kokoro-82M through `kokoro-onnx`); no cloud service, no
   network at runtime.
-- English by default, French available; voice, speed, addressee name and mood are configurable.
+- English by default; French, Spanish, Portuguese, Italian (and Hindi, Mandarin, experimental) built in;
+  German as a download. Voice, speed, addressee name and mood are configurable.
 - Short templated messages only by default: nothing from your transcript is read aloud.
 - Never slows down or breaks a Claude Code session.
 
@@ -87,6 +88,7 @@ talktome joke                          # a joke; also: talktome fact, talktome w
 | `it` | Italiano | 1 / 1 | default |
 | `hi` | हिन्दी (Hindi) | 2 / 2 | experimental |
 | `zh` | 中文 (Mandarin) | 4 / 4 | experimental |
+| `de` | Deutsch | 1 / 1 (Piper, CC0) | download, 126 MB |
 
 ```bash
 talktome lang                          # installed and available packs
@@ -94,7 +96,18 @@ talktome set language es               # or /talktome es inside Claude Code
 talktome lang remove zh                # or: talktome lang add zh
 ```
 
-All of them use the Kokoro voices already installed. Experimental packs have not been reviewed by native speakers.
+The built-in packs use the Kokoro voices already installed. Experimental packs have not been reviewed by native
+speakers.
+
+**Downloadable packs.** German speaks with [Piper](https://github.com/OHF-Voice/piper1-gpl) voices, downloaded
+once and checked against their pinned SHA-256. Piper (GPL-3.0) is optional and installed separately:
+
+```bash
+pipx inject talktome piper-tts         # or, in a virtual environment: pip install 'talktome[piper]'
+talktome lang add de                   # downloads two CC0 voices (126 MB), then installs German
+talktome set language de
+talktome lang remove de --purge        # uninstall and delete the voices
+```
 
 ## Confidential sessions
 

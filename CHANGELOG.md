@@ -9,6 +9,26 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.0] — 2026-10-06
+
+### Added
+
+- **Downloadable language packs** spoken by [Piper](https://github.com/OHF-Voice/piper1-gpl):
+  `talktome lang add de` downloads the pack's voices (pinned by size and SHA-256 at a fixed revision; nothing
+  unverified is kept) and installs the language. First pack: **German** (*du*), with two CC0 voices,
+  `de_DE-thorsten-medium` (male) and `de_DE-kerstin-low` (female), 126 MB.
+- The Piper engine (`piper-tts`, GPL-3.0) is optional and never bundled: `pipx inject talktome piper-tts`, or the
+  extra `talktome[piper]`. Without it, `lang add de` says what to run.
+- `talktome lang remove CODE --purge` deletes downloaded voices; `lang list` shows the download size;
+  `voices --lang de` lists a pack's voices with their license; `doctor` re-hashes the installed voices.
+- Piper speaks at the requested speed: a measured per-voice duration floor corrects Piper's length scale
+  (asked 1.5, measured 1.45–1.52; without it 1.14–1.20).
+
+### Fixed
+
+- German *ich*-laut with `piper-tts` 1.8: the decomposed `ç` is recomposed for voices that only know `ç`
+  (*nicht* was spoken *nict*).
+
 ## [0.3.0] — 2026-10-06
 
 ### Added

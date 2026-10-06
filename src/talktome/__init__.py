@@ -4,4 +4,4 @@ Author: Olivier Vitrac, PhD, HDR — Adservio Innovation Lab — Adservio Group 
 License: MIT
 """
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"

@@ -66,15 +66,25 @@ def cache_key(u: Utterance, spoken_text: str, model_id: str, volume: float) -> s
     return hashlib.sha256(json.dumps(fields, sort_keys=True).encode("utf-8")).hexdigest()[:32]
 
 
-def render(u: Utterance, cfg: dict[str, Any]) -> tuple[Path, dict[str, Any]]:
-    """Path of the WAV for `u`, from the cache or freshly synthesized; raises on any engine failure."""
+def _model(u: Utterance, cfg: dict[str, Any]) -> tuple[str, str, Path | None]:
+    """(engine, model identity, Kokoro model directory) for `u`; raises if the voice files are not usable."""
+    eng = langs.engine(u.lang)
+    if eng == "piper":
+        from . import voicepacks
+
+        return eng, voicepacks.fingerprint(u.lang, u.voice), None
     models_dir = models.resolve_dir(cfg)
     if models_dir is None:
         raise models.ModelError("no model directory configured (talktome setup)")
-    model_id = models.fingerprint(models_dir)
+    return eng, models.fingerprint(models_dir), models_dir
+
+
+def render(u: Utterance, cfg: dict[str, Any]) -> tuple[Path, dict[str, Any]]:
+    """Path of the WAV for `u`, from the cache or freshly synthesized; raises on any engine failure."""
+    eng, model_id, models_dir = _model(u, cfg)
     spoken = catalog.respell(u.text, cfg["respell"])
     path = paths.cache_dir() / f"{cache_key(u, spoken, model_id, float(cfg['volume']))}.wav"
-    info: dict[str, Any] = {"engine": "kokoro", "model": model_id, "spoken_text": spoken}
+    info: dict[str, Any] = {"engine": eng, "model": model_id, "spoken_text": spoken}
     if path.is_file():
         return path, {**info, "cache": "hit", "synth_s": 0.0}
     import numpy as np
@@ -83,8 +93,14 @@ def render(u: Utterance, cfg: dict[str, Any]) -> tuple[Path, dict[str, Any]]:
     from . import earcon, engine, moods
 
     t0 = time.monotonic()
-    lang = langs.kokoro_lang(u.lang, u.voice)
-    y = engine.Kokoro(models_dir).synth(spoken, u.voice, u.speed, u.pitch_st, lang)
+    if models_dir is None:
+        from . import voicepacks
+
+        floor = voicepacks.length_floor(u.lang, u.voice)
+        y = engine.Piper(*voicepacks.paths_of(u.voice), floor=floor).synth(spoken, u.speed, u.pitch_st)
+    else:
+        lang = langs.kokoro_lang(u.lang, u.voice)
+        y = engine.Kokoro(models_dir).synth(spoken, u.voice, u.speed, u.pitch_st, lang)
     if u.earcon:
         y = earcon.with_speech(earcon.render(moods.get(u.mood)), y)
     y = y * float(cfg["volume"])

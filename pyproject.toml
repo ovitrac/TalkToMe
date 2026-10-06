@@ -7,8 +7,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "talktome"
-version = "0.3.0"
-description = "Spoken alerts from concurrent Claude Code sessions: local TTS, English or French, configurable voice and mood."
+version = "0.4.0"
+description = "Spoken alerts from concurrent Claude Code sessions: local TTS in eight languages, configurable voice and mood."
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]
@@ -22,6 +22,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8", "mypy>=1.10", "black>=24", "isort>=5", "flake8>=7"]
+piper = ["piper-tts>=1.8"]  # GPL-3.0, optional: downloadable language packs (talktome lang add de)
 
 [project.scripts]
 talktome = "talktome.cli:main"

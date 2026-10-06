@@ -50,6 +50,9 @@ DEFAULTS: dict[str, Any] = {
 }
 
 _VOICE = re.compile(r"^[a-z]{2}_[a-z0-9]+$")
+_PIPER_VOICE = re.compile(
+    r"^[a-z]{2,3}_[A-Z]{2}-[a-z0-9_]+-(x_low|low|medium|high)$"
+)  # de_DE-thorsten-medium
 
 
 class ConfigError(Exception):
@@ -153,6 +156,8 @@ def validate(cfg: dict[str, Any]) -> list[str]:
                 e.append(f"voices.{lang}: one voice, or one per gender {GENDERS}")
                 continue
             for g, v in specs.items():
+                if isinstance(v, str) and _PIPER_VOICE.match(v):
+                    continue  # a Piper voice: checked against its pack by voice_errors(), off the hook path
                 try:
                     parse_voice(v)
                 except (ValueError, AttributeError) as x:
@@ -221,6 +226,20 @@ def validate(cfg: dict[str, Any]) -> list[str]:
     return e
 
 
+def voice_errors(cfg: dict[str, Any]) -> list[str]:
+    """Voice overrides checked against their packs (reads the packs: CLI and doctor only, never the hook)."""
+    e: list[str] = []
+    for lang, spec in cfg["voices"].items():
+        specs = spec if isinstance(spec, dict) else {g: spec for g in GENDERS}
+        known = langs.pack(lang).get("piper", {}).get("voices", {})
+        for g, v in specs.items():
+            if langs.engine(lang) == "piper" and v not in known:
+                e.append(f"voices.{lang}.{g}: {v!r} is not a voice of the {lang} pack ({', '.join(known)})")
+            elif langs.engine(lang) != "piper" and _PIPER_VOICE.match(v):
+                e.append(f"voices.{lang}.{g}: {v!r} is a Piper voice; {lang} speaks with Kokoro")
+    return e
+
+
 _MISSING = object()
 
 
@@ -262,7 +281,7 @@ def set_value(cfg: dict[str, Any], dotted: str, raw: str) -> dict[str, Any]:
         if not isinstance(node, dict):
             raise ConfigError(f"{dotted!r}: {k!r} is not an object")
     node[keys[-1]] = value
-    errors = validate(out)
+    errors = validate(out) or voice_errors(out)
     if errors:
         raise ConfigError("; ".join(errors))
     return out

@@ -68,7 +68,7 @@ def why(lang: str, rng: random.Random) -> str:
     text = (
         pattern.replace("{subject}", subject)
         .replace("{verb}", rng.choice(w["verbs"]))
-        .replace("{goal}", rng.choice(w["goals"]))
+        .replace("{goal}", rng.choice(w.get("goals") or [""]))
         .replace("{np}", _noun_phrase(w, rng))
     )
     text = langs.polish(lang, text)
